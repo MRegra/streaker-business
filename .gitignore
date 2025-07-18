@@ -1,0 +1,6 @@
+.idea
+/backend/.gitattributes
+/backend/mvnw
+/backend/.mvn/wrapper/maven-wrapper.properties
+/backend/mvnw.cmd
+/frontend/.vscode

@@ -1,0 +1,40 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/streaker
+      SPRING_DATASOURCE_USERNAME: streaker
+      SPRING_DATASOURCE_PASSWORD: streaker
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+      SPRING_PROFILES_ACTIVE: dev
+    volumes:
+      - ./backend:/app
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./frontend:/app
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+
+  db:
+    image: postgres:15
+    container_name: streaker_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: streaker
+      POSTGRES_PASSWORD: streaker
+      POSTGRES_DB: streaker
+    volumes:
+      - ./db/data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
