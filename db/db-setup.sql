@@ -1,0 +1,12 @@
+CREATE USER streaker WITH PASSWORD 'streakerpassword';
+CREATE DATABASE streakerdb;
+GRANT ALL PRIVILEGES ON DATABASE streakerdb TO streaker;
+
+-- If we run into the error: ERROR: permission denied for schema public
+ALTER SCHEMA public OWNER TO streaker; 
+GRANT USAGE ON SCHEMA public TO streaker;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO streaker;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO streaker;
+GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO streaker;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO streaker;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO streaker;
