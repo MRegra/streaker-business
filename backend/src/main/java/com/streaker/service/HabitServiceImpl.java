@@ -2,6 +2,7 @@ package com.streaker.service;
 
 import com.streaker.controller.habit.dto.HabitRequestDto;
 import com.streaker.controller.habit.dto.HabitResponseDto;
+import com.streaker.exception.ResourceNotFoundException;
 import com.streaker.model.Category;
 import com.streaker.model.Habit;
 import com.streaker.model.Streak;
@@ -28,13 +29,13 @@ public class HabitServiceImpl implements HabitService {
     @Override
     public HabitResponseDto createHabit(UUID userId, HabitRequestDto dto) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Category category = categoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
         Streak streak = streakRepository.findById(dto.getStreakId())
-                .orElseThrow(() -> new RuntimeException("Streak not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Streak not found"));
 
         Habit habit = new Habit();
         habit.setName(dto.getName());
@@ -59,7 +60,7 @@ public class HabitServiceImpl implements HabitService {
     public HabitResponseDto getHabitById(UUID habitId) {
         return habitRepository.findById(habitId)
                 .map(this::mapToDto)
-                .orElseThrow(() -> new RuntimeException("Habit not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Habit not found"));
     }
 
     @Override

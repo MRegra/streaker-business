@@ -2,6 +2,7 @@ package com.streaker.service;
 
 import com.streaker.controller.reward.dto.RewardRequestDto;
 import com.streaker.controller.reward.dto.RewardResponseDto;
+import com.streaker.exception.ResourceNotFoundException;
 import com.streaker.model.Reward;
 import com.streaker.model.User;
 import com.streaker.repository.RewardRepository;
@@ -23,7 +24,7 @@ public class RewardServiceImpl implements RewardService {
     @Override
     public RewardResponseDto createReward(UUID userId, RewardRequestDto dto) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Reward reward = new Reward();
         reward.setName(dto.getName());
@@ -44,7 +45,7 @@ public class RewardServiceImpl implements RewardService {
     @Override
     public RewardResponseDto unlockReward(UUID rewardId) {
         Reward reward = rewardRepository.findById(rewardId)
-                .orElseThrow(() -> new RuntimeException("Reward not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Reward not found"));
 
         reward.setUnlocked(true);
         reward.setUnlockedAt(Instant.now());

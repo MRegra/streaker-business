@@ -1,6 +1,7 @@
 package com.streaker.service;
 
 import com.streaker.controller.category.dto.CategoryDto;
+import com.streaker.exception.ResourceNotFoundException;
 import com.streaker.model.Category;
 import com.streaker.model.User;
 import com.streaker.repository.CategoryRepository;
@@ -21,7 +22,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryDto createCategory(UUID userId, CategoryDto dto) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Category category = new Category();
         category.setName(dto.getName());
@@ -42,7 +43,7 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryDto getCategoryById(UUID id) {
         return categoryRepository.findById(id)
                 .map(this::mapToDto)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
     }
 
     @Override

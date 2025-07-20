@@ -1,6 +1,7 @@
 package com.streaker.service;
 
 import com.streaker.controller.user.dto.UserDto;
+import com.streaker.exception.ResourceNotFoundException;
 import com.streaker.model.User;
 import com.streaker.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,7 @@ public class UserServiceImpl implements UserService {
     public UserDto getUserById(UUID id) {
         return userRepository.findById(id)
                 .map(this::mapToDto)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
     @Override

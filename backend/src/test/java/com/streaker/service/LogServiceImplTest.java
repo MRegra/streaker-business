@@ -2,6 +2,7 @@ package com.streaker.service;
 
 import com.streaker.controller.log.dto.LogRequestDto;
 import com.streaker.controller.log.dto.LogResponseDto;
+import com.streaker.exception.ResourceNotFoundException;
 import com.streaker.model.Habit;
 import com.streaker.model.Log;
 import com.streaker.repository.HabitRepository;
@@ -91,7 +92,7 @@ public class LogServiceImplTest {
     void testGetLog_notFound() {
         when(logRepository.findById(logId)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> logService.getLog(logId));
+        assertThrows(ResourceNotFoundException.class, () -> logService.getLog(logId));
     }
 
     @Test

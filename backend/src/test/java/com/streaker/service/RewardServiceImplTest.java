@@ -2,6 +2,7 @@ package com.streaker.service;
 
 import com.streaker.controller.reward.dto.RewardRequestDto;
 import com.streaker.controller.reward.dto.RewardResponseDto;
+import com.streaker.exception.ResourceNotFoundException;
 import com.streaker.model.Reward;
 import com.streaker.model.User;
 import com.streaker.repository.RewardRepository;
@@ -103,6 +104,6 @@ public class RewardServiceImplTest {
     void testUnlockReward_notFound() {
         when(rewardRepository.findById(rewardId)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> rewardService.unlockReward(rewardId));
+        assertThrows(ResourceNotFoundException.class, () -> rewardService.unlockReward(rewardId));
     }
 }

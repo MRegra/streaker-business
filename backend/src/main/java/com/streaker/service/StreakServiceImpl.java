@@ -1,6 +1,7 @@
 package com.streaker.service;
 
 import com.streaker.controller.streak.dto.StreakDto;
+import com.streaker.exception.ResourceNotFoundException;
 import com.streaker.model.Streak;
 import com.streaker.repository.StreakRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,7 @@ public class StreakServiceImpl implements StreakService {
     public StreakDto getStreak(UUID id) {
         return streakRepository.findById(id)
                 .map(this::mapToDto)
-                .orElseThrow(() -> new RuntimeException("Streak not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Streak not found"));
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.streaker.service;
 
 import com.streaker.controller.user.dto.UserDto;
+import com.streaker.exception.ResourceNotFoundException;
 import com.streaker.model.User;
 import com.streaker.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -66,7 +67,7 @@ public class UserServiceImplTest {
     void getUserById_shouldThrowWhenNotFound() {
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> userService.getUserById(userId));
+        assertThrows(ResourceNotFoundException.class, () -> userService.getUserById(userId));
     }
 
     @Test

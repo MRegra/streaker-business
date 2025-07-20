@@ -2,6 +2,7 @@ package com.streaker.service;
 
 import com.streaker.controller.log.dto.LogRequestDto;
 import com.streaker.controller.log.dto.LogResponseDto;
+import com.streaker.exception.ResourceNotFoundException;
 import com.streaker.model.Habit;
 import com.streaker.model.Log;
 import com.streaker.repository.HabitRepository;
@@ -22,7 +23,7 @@ public class LogServiceImpl implements LogService {
     @Override
     public LogResponseDto createLog(UUID habitId, LogRequestDto dto) {
         Habit habit = habitRepository.findById(habitId)
-                .orElseThrow(() -> new RuntimeException("Habit not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Habit not found"));
 
         Log log = new Log();
         log.setDate(dto.getDate());
@@ -43,13 +44,13 @@ public class LogServiceImpl implements LogService {
     public LogResponseDto getLog(UUID logId) {
         return logRepository.findById(logId)
                 .map(this::mapToDto)
-                .orElseThrow(() -> new RuntimeException("Log not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Log not found"));
     }
 
     @Override
     public LogResponseDto markLogCompleted(UUID logId) {
         Log log = logRepository.findById(logId)
-                .orElseThrow(() -> new RuntimeException("Log not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Log not found"));
 
         log.setCompleted(true);
         return mapToDto(logRepository.save(log));

@@ -1,6 +1,7 @@
 package com.streaker.service;
 
 import com.streaker.controller.streak.dto.StreakDto;
+import com.streaker.exception.ResourceNotFoundException;
 import com.streaker.model.Streak;
 import com.streaker.repository.StreakRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,7 +59,7 @@ public class StreakServiceImplTest {
     void testGetStreak_notFound() {
         when(streakRepository.findById(streakId)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> streakService.getStreak(streakId));
+        assertThrows(ResourceNotFoundException.class, () -> streakService.getStreak(streakId));
     }
 
     @Test

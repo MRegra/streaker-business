@@ -1,6 +1,7 @@
 package com.streaker.service;
 
 import com.streaker.controller.category.dto.CategoryDto;
+import com.streaker.exception.ResourceNotFoundException;
 import com.streaker.model.Category;
 import com.streaker.model.User;
 import com.streaker.repository.CategoryRepository;
@@ -95,13 +96,16 @@ public class CategoryServiceImplTest {
 
         CategoryDto dto = new CategoryDto(new UUID(10L, 1L), "Work", "#000000");
 
-        assertThrows(RuntimeException.class, () -> service.createCategory(userId, dto));
+        String message = assertThrows(ResourceNotFoundException.class, () -> service.createCategory(userId, dto)).getMessage();
+        assertEquals("User not found", message, "User does not exist in the system");
     }
 
     @Test
     void testGetCategoryById_NotFound_ThrowsException() {
         when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> service.getCategoryById(categoryId));
+        String message = assertThrows(ResourceNotFoundException.class, () -> service.getCategoryById(categoryId)).getMessage();
+        assertEquals("Category not found", message, "Category does not exist in the system");
+
     }
 }

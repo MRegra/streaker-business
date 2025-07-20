@@ -3,6 +3,7 @@ package com.streaker.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streaker.controller.user.UserController;
 import com.streaker.controller.user.dto.UserDto;
+import com.streaker.exception.ResourceNotFoundException;
 import com.streaker.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -69,4 +70,43 @@ public class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username").value("john"));
     }
+
+    @Test
+    void getUserById_shouldReturn404_whenUserNotFound() throws Exception {
+        when(userService.getUserById(userId))
+                .thenThrow(new ResourceNotFoundException("User not found"));
+
+        mockMvc.perform(get("/users/{id}", userId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value("User not found"))
+                .andExpect(jsonPath("$.path").value("/users/" + userId));
+    }
+
+    @Test
+    void createUser_shouldReturn400_whenInvalidInput() throws Exception {
+        when(userService.createUser(any()))
+                .thenThrow(new IllegalArgumentException("Invalid email"));
+
+        mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(userDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").value("Invalid email"))
+                .andExpect(jsonPath("$.path").value("/users"));
+    }
+
+    @Test
+    void getAllUsers_shouldReturn500_whenServiceFails() throws Exception {
+        when(userService.getAllUsers())
+                .thenThrow(new RuntimeException("Database crash"));
+
+        mockMvc.perform(get("/users"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("Internal Server Error"))
+                .andExpect(jsonPath("$.message").value("Database crash"))
+                .andExpect(jsonPath("$.path").value("/users"));
+    }
+
 }
