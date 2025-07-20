@@ -69,8 +69,8 @@ public class RewardServiceImplTest {
         RewardResponseDto response = rewardService.createReward(userId, requestDto);
 
         assertNotNull(response);
-        assertEquals("Free Day", response.getName());
-        assertFalse(response.getUnlocked());
+        assertEquals("Free Day", response.name());
+        assertFalse(response.unlocked());
     }
 
     @Test
@@ -80,7 +80,7 @@ public class RewardServiceImplTest {
         List<RewardResponseDto> rewards = rewardService.getRewardsByUser(userId);
 
         assertEquals(1, rewards.size());
-        assertEquals(rewardId, rewards.getFirst().getUuid());
+        assertEquals(rewardId, rewards.getFirst().uuid());
     }
 
     @Test
@@ -95,8 +95,8 @@ public class RewardServiceImplTest {
 
         RewardResponseDto result = rewardService.unlockReward(rewardId);
 
-        assertTrue(result.getUnlocked());
-        assertNotNull(result.getUnlockedAt());
+        assertTrue(result.unlocked());
+        assertNotNull(result.unlockedAt());
         verify(rewardRepository).save(any(Reward.class));
     }
 

@@ -2,7 +2,8 @@ package com.streaker.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streaker.controller.user.UserController;
-import com.streaker.controller.user.dto.UserDto;
+import com.streaker.controller.user.dto.CreateUserDto;
+import com.streaker.controller.user.dto.UserResponseDto;
 import com.streaker.exception.ResourceNotFoundException;
 import com.streaker.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,12 +35,14 @@ public class UserControllerTest {
     private UserService userService;
 
     private UUID userId;
-    private UserDto userDto;
+    private UserResponseDto userDto;
+    private CreateUserDto createUserDto;
 
     @BeforeEach
     void setUp() {
         userId = UUID.randomUUID();
-        userDto = new UserDto(userId, "john", "john@example.com");
+        userDto = new UserResponseDto(userId, "john", "john@example.com");
+        createUserDto = new CreateUserDto("john", "john@example.com", "password12345");
     }
 
     @Test
@@ -66,7 +69,7 @@ public class UserControllerTest {
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(userDto)))
+                        .content(new ObjectMapper().writeValueAsString(createUserDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username").value("john"));
     }
@@ -90,7 +93,7 @@ public class UserControllerTest {
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(userDto)))
+                        .content(new ObjectMapper().writeValueAsString(createUserDto)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Bad Request"))
                 .andExpect(jsonPath("$.message").value("Invalid email"))
@@ -107,6 +110,23 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.error").value("Internal Server Error"))
                 .andExpect(jsonPath("$.message").value("Database crash"))
                 .andExpect(jsonPath("$.path").value("/users"));
+    }
+
+    @Test
+    void createUser_shouldReturn400_whenUsernameIsMissing() throws Exception {
+        String invalidJson = """
+            {
+                "username": "",
+                "email": "invalid@example.com",
+                "password": "password1234"
+            }
+        """;
+
+        mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("Username is required")));
     }
 
 }

@@ -1,10 +1,12 @@
 package com.streaker.controller.category;
 
-import com.streaker.controller.category.dto.CategoryDto;
+import com.streaker.controller.category.dto.CategoryRequestDto;
+import com.streaker.controller.category.dto.CategoryResponseDto;
 import com.streaker.service.CategoryService;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,21 +31,21 @@ public class CategoryController {
 
     @Operation(summary = "Create a new category")
     @PostMapping
-    public ResponseEntity<CategoryDto> createCategory(
+    public ResponseEntity<CategoryResponseDto> createCategory(
             @PathVariable UUID userId,
-            @RequestBody CategoryDto dto) {
+            @Valid @RequestBody CategoryRequestDto dto) {
         return ResponseEntity.ok(categoryService.createCategory(userId, dto));
     }
 
     @Operation(summary = "Get all categories for a user")
     @GetMapping
-    public ResponseEntity<List<CategoryDto>> getCategories(@PathVariable UUID userId) {
+    public ResponseEntity<List<CategoryResponseDto>> getCategories(@PathVariable UUID userId) {
         return ResponseEntity.ok(categoryService.getCategoriesByUser(userId));
     }
 
     @Operation(summary = "Get a specific category")
     @GetMapping("/{id}")
-    public ResponseEntity<CategoryDto> getCategory(@PathVariable UUID id) {
+    public ResponseEntity<CategoryResponseDto> getCategory(@PathVariable UUID id) {
         return ResponseEntity.ok(categoryService.getCategoryById(id));
     }
 

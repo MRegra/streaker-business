@@ -81,7 +81,7 @@ public class HabitServiceImplTest {
         HabitResponseDto response = habitService.createHabit(userId, requestDto);
 
         assertNotNull(response);
-        assertEquals("Workout", response.getName());
+        assertEquals("Workout", response.name());
         verify(habitRepository).save(any(Habit.class));
     }
 
@@ -92,7 +92,7 @@ public class HabitServiceImplTest {
         List<HabitResponseDto> habits = habitService.getHabitsForUser(userId);
 
         assertEquals(1, habits.size());
-        assertEquals("Workout", habits.getFirst().getName());
+        assertEquals("Workout", habits.getFirst().name());
     }
 
     @Test
@@ -101,7 +101,7 @@ public class HabitServiceImplTest {
 
         HabitResponseDto dto = habitService.getHabitById(habitId);
 
-        assertEquals(habitId, dto.getUuid());
+        assertEquals(habitId, dto.uuid());
     }
 
     @Test

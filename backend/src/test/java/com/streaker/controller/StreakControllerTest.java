@@ -62,6 +62,6 @@ public class StreakControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.uuid").value(streakId.toString()))
                 .andExpect(jsonPath("$.currentCount").value(3))
-                .andExpect(jsonPath("$.active").value(true));
+                .andExpect(jsonPath("$.isActive").value(true));
     }
 }

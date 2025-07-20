@@ -27,9 +27,9 @@ public class RewardServiceImpl implements RewardService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Reward reward = new Reward();
-        reward.setName(dto.getName());
-        reward.setDescription(dto.getDescription());
-        reward.setPointsRequired(dto.getPointsRequired());
+        reward.setName(dto.name());
+        reward.setDescription(dto.description());
+        reward.setPointsRequired(dto.pointsRequired());
         reward.setUser(user);
 
         return mapToDto(rewardRepository.save(reward));

@@ -1,6 +1,7 @@
 package com.streaker.service;
 
-import com.streaker.controller.user.dto.UserDto;
+import com.streaker.controller.user.dto.CreateUserDto;
+import com.streaker.controller.user.dto.UserResponseDto;
 import com.streaker.exception.ResourceNotFoundException;
 import com.streaker.model.User;
 import com.streaker.repository.UserRepository;
@@ -46,10 +47,10 @@ public class UserServiceImplTest {
     void getAllUsers_shouldReturnUserList() {
         when(userRepository.findAll()).thenReturn(List.of(user));
 
-        List<UserDto> result = userService.getAllUsers();
+        List<UserResponseDto> result = userService.getAllUsers();
 
         assertEquals(1, result.size());
-        assertEquals("john", result.getFirst().getUsername());
+        assertEquals("john", result.getFirst().username());
         verify(userRepository).findAll();
     }
 
@@ -57,10 +58,10 @@ public class UserServiceImplTest {
     void getUserById_shouldReturnUserDto() {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
-        UserDto dto = userService.getUserById(userId);
+        UserResponseDto dto = userService.getUserById(userId);
 
-        assertEquals("john", dto.getUsername());
-        assertEquals(userId, dto.getUuid());
+        assertEquals("john", dto.username());
+        assertEquals(userId, dto.uuid());
     }
 
     @Test
@@ -72,7 +73,7 @@ public class UserServiceImplTest {
 
     @Test
     void createUser_shouldSaveAndReturnDto() {
-        UserDto inputDto = new UserDto(new UUID(99L, 1L), "john", "john@example.com");
+        CreateUserDto inputDto = new CreateUserDto("john", "john@example.com", "password12345");
 
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
             User u = invocation.getArgument(0);
@@ -80,10 +81,10 @@ public class UserServiceImplTest {
             return u;
         });
 
-        UserDto result = userService.createUser(inputDto);
+        UserResponseDto result = userService.createUser(inputDto);
 
-        assertEquals("john", result.getUsername());
-        assertEquals(userId, result.getUuid());
+        assertEquals("john", result.username());
+        assertEquals(userId, result.uuid());
         verify(userRepository).save(any(User.class));
     }
 }

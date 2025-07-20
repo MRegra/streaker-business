@@ -1,6 +1,7 @@
 package com.streaker.service;
 
-import com.streaker.controller.category.dto.CategoryDto;
+import com.streaker.controller.category.dto.CategoryRequestDto;
+import com.streaker.controller.category.dto.CategoryResponseDto;
 import com.streaker.exception.ResourceNotFoundException;
 import com.streaker.model.Category;
 import com.streaker.model.User;
@@ -53,35 +54,35 @@ public class CategoryServiceImplTest {
 
     @Test
     void testCreateCategory() {
-        CategoryDto dto = new CategoryDto(new UUID(10L, 1L), "Work", "#000000");
+        CategoryRequestDto dto = new CategoryRequestDto("Work", "#000000");
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(categoryRepository.save(any(Category.class))).thenReturn(category);
 
-        CategoryDto result = service.createCategory(userId, dto);
+        CategoryResponseDto result = service.createCategory(userId, dto);
 
         assertNotNull(result);
-        assertEquals("Work", result.getName());
-        assertEquals("#000000", result.getColor());
+        assertEquals("Work", result.name());
+        assertEquals("#000000", result.color());
     }
 
     @Test
     void testGetCategoriesByUser() {
         when(categoryRepository.findByUserUuid(userId)).thenReturn(List.of(category));
 
-        List<CategoryDto> result = service.getCategoriesByUser(userId);
+        List<CategoryResponseDto> result = service.getCategoriesByUser(userId);
 
         assertEquals(1, result.size());
-        assertEquals("Work", result.getFirst().getName());
+        assertEquals("Work", result.getFirst().name());
     }
 
     @Test
     void testGetCategoryById() {
         when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
 
-        CategoryDto result = service.getCategoryById(categoryId);
+        CategoryResponseDto result = service.getCategoryById(categoryId);
 
-        assertEquals("Work", result.getName());
+        assertEquals("Work", result.name());
     }
 
     @Test
@@ -94,7 +95,7 @@ public class CategoryServiceImplTest {
     void testCreateCategory_UserNotFound_ThrowsException() {
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-        CategoryDto dto = new CategoryDto(new UUID(10L, 1L), "Work", "#000000");
+        CategoryRequestDto dto = new CategoryRequestDto("Work", "#000000");
 
         String message = assertThrows(ResourceNotFoundException.class, () -> service.createCategory(userId, dto)).getMessage();
         assertEquals("User not found", message, "User does not exist in the system");

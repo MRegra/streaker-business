@@ -5,6 +5,7 @@ import com.streaker.controller.log.dto.LogResponseDto;
 import com.streaker.service.LogService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,7 +28,7 @@ public class LogController {
 
     @Operation(summary = "Create a log entry for a habit")
     @PostMapping
-    public ResponseEntity<LogResponseDto> createLog(@PathVariable UUID habitId, @RequestBody LogRequestDto dto) {
+    public ResponseEntity<LogResponseDto> createLog(@PathVariable UUID habitId, @Valid @RequestBody LogRequestDto dto) {
         return ResponseEntity.ok(logService.createLog(habitId, dto));
     }
 

@@ -64,8 +64,8 @@ public class LogServiceImplTest {
         LogResponseDto response = logService.createLog(habitId, requestDto);
 
         assertNotNull(response);
-        assertEquals(logId, response.getUuid());
-        assertTrue(response.getCompleted());
+        assertEquals(logId, response.uuid());
+        assertTrue(response.completed());
     }
 
     @Test
@@ -75,7 +75,7 @@ public class LogServiceImplTest {
         List<LogResponseDto> logs = logService.getLogsByHabit(habitId);
 
         assertEquals(1, logs.size());
-        assertEquals(logId, logs.getFirst().getUuid());
+        assertEquals(logId, logs.getFirst().uuid());
     }
 
     @Test
@@ -84,8 +84,8 @@ public class LogServiceImplTest {
 
         LogResponseDto response = logService.getLog(logId);
 
-        assertEquals(logId, response.getUuid());
-        assertEquals(habitId, response.getHabitId());
+        assertEquals(logId, response.uuid());
+        assertEquals(habitId, response.habitId());
     }
 
     @Test
@@ -103,7 +103,7 @@ public class LogServiceImplTest {
 
         LogResponseDto result = logService.markLogCompleted(logId);
 
-        assertTrue(result.getCompleted());
+        assertTrue(result.completed());
         verify(logRepository).save(any(Log.class));
     }
 }

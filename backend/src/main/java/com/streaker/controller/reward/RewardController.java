@@ -5,6 +5,7 @@ import com.streaker.controller.reward.dto.RewardResponseDto;
 import com.streaker.service.RewardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,7 +30,7 @@ public class RewardController {
     @PostMapping
     public ResponseEntity<RewardResponseDto> createReward(
             @PathVariable UUID userId,
-            @RequestBody RewardRequestDto dto) {
+            @Valid @RequestBody RewardRequestDto dto) {
         return ResponseEntity.ok(rewardService.createReward(userId, dto));
     }
 

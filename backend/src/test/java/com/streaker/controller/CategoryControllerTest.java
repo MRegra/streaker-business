@@ -2,7 +2,8 @@ package com.streaker.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streaker.controller.category.CategoryController;
-import com.streaker.controller.category.dto.CategoryDto;
+import com.streaker.controller.category.dto.CategoryRequestDto;
+import com.streaker.controller.category.dto.CategoryResponseDto;
 import com.streaker.service.CategoryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,19 +39,21 @@ class CategoryControllerTest {
 
     private UUID userId;
     private UUID categoryId;
-    private CategoryDto sampleCategory;
+    private CategoryRequestDto sampleCategory;
+    private CategoryResponseDto sampleCategoryResponse;
 
     @BeforeEach
     void setUp() {
         userId = UUID.randomUUID();
         categoryId = UUID.randomUUID();
-        sampleCategory = new CategoryDto(categoryId, "Fitness", "#FF0000");
+        sampleCategory = new CategoryRequestDto("Fitness", "#FF0000");
+        sampleCategoryResponse = new CategoryResponseDto(categoryId, "Fitness", "#FF0000");
     }
 
     @Test
     void testCreateCategory() throws Exception {
-        Mockito.when(categoryService.createCategory(eq(userId), any(CategoryDto.class)))
-                .thenReturn(sampleCategory);
+        Mockito.when(categoryService.createCategory(eq(userId), any(CategoryRequestDto.class)))
+                .thenReturn(sampleCategoryResponse);
 
         mockMvc.perform(post("/users/{userId}/categories", userId)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -64,7 +67,7 @@ class CategoryControllerTest {
     @Test
     void testGetCategories() throws Exception {
         Mockito.when(categoryService.getCategoriesByUser(userId))
-                .thenReturn(List.of(sampleCategory));
+                .thenReturn(List.of(sampleCategoryResponse));
 
         mockMvc.perform(get("/users/{userId}/categories", userId))
                 .andExpect(status().isOk())
@@ -75,7 +78,7 @@ class CategoryControllerTest {
     @Test
     void testGetCategory() throws Exception {
         Mockito.when(categoryService.getCategoryById(categoryId))
-                .thenReturn(sampleCategory);
+                .thenReturn(sampleCategoryResponse);
 
         mockMvc.perform(get("/users/{userId}/categories/{id}", userId, categoryId))
                 .andExpect(status().isOk())

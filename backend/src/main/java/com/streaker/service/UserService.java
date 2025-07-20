@@ -1,15 +1,16 @@
 package com.streaker.service;
 
-import com.streaker.controller.user.dto.UserDto;
+import com.streaker.controller.user.dto.CreateUserDto;
+import com.streaker.controller.user.dto.UserResponseDto;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
 
-    List<UserDto> getAllUsers();
+    List<UserResponseDto> getAllUsers();
 
-    UserDto getUserById(UUID id);
+    UserResponseDto getUserById(UUID id);
 
-    UserDto createUser(UserDto userDto);
+    UserResponseDto createUser(CreateUserDto userDto);
 }

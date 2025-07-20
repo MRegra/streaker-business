@@ -41,7 +41,7 @@ public class LogControllerTest {
         logId = UUID.randomUUID();
 
         requestDto = new LogRequestDto(LocalDate.of(2025, 7, 20), true);
-        responseDto = new LogResponseDto(logId, requestDto.getDate(), true, habitId);
+        responseDto = new LogResponseDto(logId, requestDto.date(), true, habitId);
     }
 
     @Test

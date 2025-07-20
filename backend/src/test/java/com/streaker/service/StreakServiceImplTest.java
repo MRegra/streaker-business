@@ -50,8 +50,8 @@ public class StreakServiceImplTest {
 
         StreakDto dto = streakService.getStreak(streakId);
 
-        assertEquals(streakId, dto.getUuid());
-        assertEquals(5, dto.getCurrentCount());
+        assertEquals(streakId, dto.uuid());
+        assertEquals(5, dto.currentCount());
         assertTrue(dto.isActive());
     }
 
@@ -69,6 +69,6 @@ public class StreakServiceImplTest {
         List<StreakDto> streaks = streakService.getStreaksByUser(userId);
 
         assertEquals(1, streaks.size());
-        assertEquals(streakId, streaks.getFirst().getUuid());
+        assertEquals(streakId, streaks.getFirst().uuid());
     }
 }

@@ -1,6 +1,7 @@
 package com.streaker.service;
 
-import com.streaker.controller.user.dto.UserDto;
+import com.streaker.controller.user.dto.CreateUserDto;
+import com.streaker.controller.user.dto.UserResponseDto;
 import com.streaker.exception.ResourceNotFoundException;
 import com.streaker.model.User;
 import com.streaker.repository.UserRepository;
@@ -17,7 +18,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Override
-    public List<UserDto> getAllUsers() {
+    public List<UserResponseDto> getAllUsers() {
         return userRepository.findAll()
                 .stream()
                 .map(this::mapToDto)
@@ -25,21 +26,21 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto getUserById(UUID id) {
+    public UserResponseDto getUserById(UUID id) {
         return userRepository.findById(id)
                 .map(this::mapToDto)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
     @Override
-    public UserDto createUser(UserDto userDto) {
+    public UserResponseDto createUser(CreateUserDto userDto) {
         User user = new User();
-        user.setUsername(userDto.getUsername());
-        user.setEmail(userDto.getEmail());
+        user.setUsername(userDto.username());
+        user.setEmail(userDto.email());
         return mapToDto(userRepository.save(user));
     }
 
-    private UserDto mapToDto(User user) {
-        return new UserDto(user.getUuid(), user.getUsername(), user.getEmail());
+    private UserResponseDto mapToDto(User user) {
+        return new UserResponseDto(user.getUuid(), user.getUsername(), user.getEmail());
     }
 }

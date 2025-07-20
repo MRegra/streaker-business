@@ -1,6 +1,7 @@
 package com.streaker.service;
 
-import com.streaker.controller.category.dto.CategoryDto;
+import com.streaker.controller.category.dto.CategoryRequestDto;
+import com.streaker.controller.category.dto.CategoryResponseDto;
 import com.streaker.exception.ResourceNotFoundException;
 import com.streaker.model.Category;
 import com.streaker.model.User;
@@ -20,27 +21,27 @@ public class CategoryServiceImpl implements CategoryService {
     private final UserRepository userRepository;
 
     @Override
-    public CategoryDto createCategory(UUID userId, CategoryDto dto) {
+    public CategoryResponseDto createCategory(UUID userId, CategoryRequestDto dto) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Category category = new Category();
-        category.setName(dto.getName());
-        category.setColor(dto.getColor());
+        category.setName(dto.name());
+        category.setColor(dto.color());
         category.setUser(user);
 
         return mapToDto(categoryRepository.save(category));
     }
 
     @Override
-    public List<CategoryDto> getCategoriesByUser(UUID userId) {
+    public List<CategoryResponseDto> getCategoriesByUser(UUID userId) {
         return categoryRepository.findByUserUuid(userId).stream()
                 .map(this::mapToDto)
                 .toList();
     }
 
     @Override
-    public CategoryDto getCategoryById(UUID id) {
+    public CategoryResponseDto getCategoryById(UUID id) {
         return categoryRepository.findById(id)
                 .map(this::mapToDto)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
@@ -51,8 +52,8 @@ public class CategoryServiceImpl implements CategoryService {
         categoryRepository.deleteById(id);
     }
 
-    private CategoryDto mapToDto(Category category) {
-        return new CategoryDto(
+    private CategoryResponseDto mapToDto(Category category) {
+        return new CategoryResponseDto(
                 category.getUuid(),
                 category.getName(),
                 category.getColor()

@@ -31,16 +31,16 @@ public class HabitServiceImpl implements HabitService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        Category category = categoryRepository.findById(dto.getCategoryId())
+        Category category = categoryRepository.findById(dto.categoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
-        Streak streak = streakRepository.findById(dto.getStreakId())
+        Streak streak = streakRepository.findById(dto.streakId())
                 .orElseThrow(() -> new ResourceNotFoundException("Streak not found"));
 
         Habit habit = new Habit();
-        habit.setName(dto.getName());
-        habit.setDescription(dto.getDescription());
-        habit.setFrequency(dto.getFrequency());
+        habit.setName(dto.name());
+        habit.setDescription(dto.description());
+        habit.setFrequency(dto.frequency());
         habit.setUser(user);
         habit.setCategory(category);
         habit.setStreak(streak);

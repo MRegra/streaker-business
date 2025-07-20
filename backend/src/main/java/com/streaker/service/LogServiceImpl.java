@@ -26,8 +26,8 @@ public class LogServiceImpl implements LogService {
                 .orElseThrow(() -> new ResourceNotFoundException("Habit not found"));
 
         Log log = new Log();
-        log.setDate(dto.getDate());
-        log.setCompleted(dto.getCompleted() && dto.getCompleted());
+        log.setDate(dto.date());
+        log.setCompleted(dto.completed());
         log.setHabit(habit);
 
         return mapToDto(logRepository.save(log));

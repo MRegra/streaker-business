@@ -1,7 +1,9 @@
 package com.streaker.controller.user;
 
-import com.streaker.controller.user.dto.UserDto;
+import com.streaker.controller.user.dto.CreateUserDto;
+import com.streaker.controller.user.dto.UserResponseDto;
 import com.streaker.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,19 +29,19 @@ public class UserController {
 
     @Operation(summary = "Get all users")
     @GetMapping
-    public ResponseEntity<List<UserDto>> getAllUsers() {
+    public ResponseEntity<List<UserResponseDto>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
     @Operation(summary = "Get a user by ID")
     @GetMapping("/{id}")
-    public ResponseEntity<UserDto> getUserById(@PathVariable UUID id) {
+    public ResponseEntity<UserResponseDto> getUserById(@PathVariable UUID id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
     @Operation(summary = "Create a new user")
     @PostMapping
-    public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto) {
+    public ResponseEntity<UserResponseDto> createUser(@Valid @RequestBody CreateUserDto userDto) {
         return ResponseEntity.ok(userService.createUser(userDto));
     }
 
