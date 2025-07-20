@@ -23,6 +23,15 @@ public class Streak {
     @Column(nullable = false)
     private String name;
 
+    @Column(name = "current_count", nullable = false)
+    private int currentCount;
+
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive;
+
+    @Column(name = "longest_streak", nullable = false)
+    private int longestStreak;
+
     @Column
     private String description;
 
