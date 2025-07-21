@@ -38,7 +38,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
 
       - name: Cache Maven packages
         uses: actions/cache@v3
@@ -48,4 +48,5 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: Build and Test with Maven
+        working-directory: ./backend
         run: mvn clean verify
