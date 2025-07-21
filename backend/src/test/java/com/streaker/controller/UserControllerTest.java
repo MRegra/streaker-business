@@ -71,7 +71,7 @@ public class UserControllerTest {
     void createUser_shouldReturnCreatedUser() throws Exception {
         when(userService.createUser(any())).thenReturn(userDto);
 
-        mockMvc.perform(post("/users")
+        mockMvc.perform(post("/users/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(createUserDto)))
                 .andExpect(status().isOk())
@@ -95,13 +95,13 @@ public class UserControllerTest {
         when(userService.createUser(any()))
                 .thenThrow(new IllegalArgumentException("Invalid email"));
 
-        mockMvc.perform(post("/users")
+        mockMvc.perform(post("/users/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(createUserDto)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Bad Request"))
                 .andExpect(jsonPath("$.message").value("Invalid email"))
-                .andExpect(jsonPath("$.path").value("/users"));
+                .andExpect(jsonPath("$.path").value("/users/register"));
     }
 
     @Test
@@ -126,7 +126,7 @@ public class UserControllerTest {
             }
         """;
 
-        mockMvc.perform(post("/users")
+        mockMvc.perform(post("/users/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(invalidJson))
                 .andExpect(status().isBadRequest())

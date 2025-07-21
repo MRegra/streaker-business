@@ -3,6 +3,7 @@ package com.streaker.controller.user;
 import com.streaker.controller.user.dto.CreateUserDto;
 import com.streaker.controller.user.dto.UserResponseDto;
 import com.streaker.service.UserService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 public class UserController {
 
     private final UserService userService;
@@ -40,8 +42,8 @@ public class UserController {
     }
 
     @Operation(summary = "Create a new user")
-    @PostMapping
-    public ResponseEntity<UserResponseDto> createUser(@Valid @RequestBody CreateUserDto userDto) {
+    @PostMapping("register")
+    public ResponseEntity<UserResponseDto> register(@Valid @RequestBody CreateUserDto userDto) {
         return ResponseEntity.ok(userService.createUser(userDto));
     }
 

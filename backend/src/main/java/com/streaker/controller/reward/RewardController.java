@@ -4,6 +4,7 @@ import com.streaker.controller.reward.dto.RewardRequestDto;
 import com.streaker.controller.reward.dto.RewardResponseDto;
 import com.streaker.service.RewardService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import java.util.UUID;
 @RequestMapping("/users/{userId}/rewards")
 @RequiredArgsConstructor
 @Tag(name = "Reward", description = "Manage user rewards")
+@SecurityRequirement(name = "bearerAuth")
 public class RewardController {
 
     private final RewardService rewardService;

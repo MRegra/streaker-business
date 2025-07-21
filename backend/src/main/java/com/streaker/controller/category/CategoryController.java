@@ -5,6 +5,7 @@ import com.streaker.controller.category.dto.CategoryResponseDto;
 import com.streaker.service.CategoryService;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Tag(name = "Category", description = "Manage user categories")
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "CategoryService is a Spring-managed bean and safe to inject")
+@SecurityRequirement(name = "bearerAuth")
 public class CategoryController {
 
     private final CategoryService categoryService;

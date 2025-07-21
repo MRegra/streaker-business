@@ -43,6 +43,7 @@ public class UserServiceImpl implements UserService {
     public UserResponseDto createUser(CreateUserDto userDto) {
         User user = new User();
         user.setUsername(userDto.username());
+        user.setPassword(userDto.password());
         user.setEmail(userDto.email());
         return mapToDto(userRepository.save(user));
     }

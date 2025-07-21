@@ -5,6 +5,7 @@ import com.streaker.controller.habit.dto.HabitResponseDto;
 import com.streaker.service.HabitService;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Tag(name = "Habit", description = "Manage user habits")
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "HabitService is a Spring-managed bean and safe to inject")
+@SecurityRequirement(name = "bearerAuth")
 public class HabitController {
 
     private final HabitService habitService;

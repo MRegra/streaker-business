@@ -32,7 +32,7 @@ class CustomUserDetailsServiceTest {
         User user = new User();
         user.setUsername("testadmin");
         user.setEmail("admin@test.com");
-        user.setHashedPwd("hashedpassword");
+        user.setPassword("hashedpassword");
         user.setRole(Role.ADMIN);
 
         when(userRepository.findByUsername("testadmin")).thenReturn(Optional.of(user));
