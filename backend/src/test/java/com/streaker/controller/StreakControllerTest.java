@@ -15,6 +15,8 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -73,7 +75,12 @@ public class StreakControllerTest {
         user.setPassword("password");
         user.setRole(Role.USER);
         User saved = userRepository.save(user);
-        jwtToken = jwtService.generateToken(user);
+        UserDetails userDetails = new org.springframework.security.core.userdetails.User(
+                "testadmin@example.com",
+                "password",
+                List.of(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+        jwtToken = jwtService.generateToken(userDetails);
         userId = saved.getUuid();
     }
 

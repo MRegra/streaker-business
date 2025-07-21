@@ -39,7 +39,7 @@ class CustomUserDetailsServiceTest {
 
         UserDetails result = customUserDetailsService.loadUserByUsername("testadmin");
 
-        assertEquals("admin@test.com", result.getUsername());
+        assertEquals("testadmin", result.getUsername());
         assertEquals("hashedpassword", result.getPassword());
         assertTrue(result.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")));
     }

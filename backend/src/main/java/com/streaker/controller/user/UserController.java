@@ -1,21 +1,28 @@
 package com.streaker.controller.user;
 
+import com.streaker.config.JwtService;
 import com.streaker.controller.user.dto.CreateUserDto;
+import com.streaker.controller.user.dto.LoginUserDto;
+import com.streaker.controller.user.dto.LoginUserTokenDto;
 import com.streaker.controller.user.dto.UserResponseDto;
 import com.streaker.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.Operation;
 
 import java.util.List;
 import java.util.UUID;
@@ -26,6 +33,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
 public class UserController {
+
+    private final AuthenticationManager authenticationManager;
+
+    private final JwtService jwtService;
 
     private final UserService userService;
 
@@ -45,6 +56,23 @@ public class UserController {
     @PostMapping("register")
     public ResponseEntity<UserResponseDto> register(@Valid @RequestBody CreateUserDto userDto) {
         return ResponseEntity.ok(userService.createUser(userDto));
+    }
+
+    @Operation(summary = "Authenticate and return JWT")
+    @PostMapping("login")
+    public ResponseEntity<LoginUserTokenDto> login(@RequestBody LoginUserDto loginRequest) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginRequest.username(),
+                        loginRequest.password()
+                )
+        );
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String token = jwtService.generateToken(userDetails);
+
+        return ResponseEntity.ok(new LoginUserTokenDto(token));
     }
 
 }

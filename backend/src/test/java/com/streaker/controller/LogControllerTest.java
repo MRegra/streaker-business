@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -67,13 +69,20 @@ public class LogControllerTest {
         requestDto = new LogRequestDto(LocalDate.of(2025, 7, 20), true);
         responseDto = new LogResponseDto(logId, requestDto.date(), true, habitId);
 
+
         User user = new User();
         user.setUsername("testadmin@example.com");
         user.setEmail("testadmin@example.com");
         user.setPassword("password");
         user.setRole(Role.USER);
         userRepository.save(user);
-        jwtToken = jwtService.generateToken(user);
+
+        UserDetails userDetails = new org.springframework.security.core.userdetails.User(
+                "testadmin@example.com",
+                "password",
+                List.of(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+        jwtToken = jwtService.generateToken(userDetails);
     }
 
     @AfterEach

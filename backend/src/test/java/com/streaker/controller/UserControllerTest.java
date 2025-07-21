@@ -1,7 +1,9 @@
 package com.streaker.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.streaker.config.JwtService;
 import com.streaker.controller.user.dto.CreateUserDto;
+import com.streaker.controller.user.dto.LoginUserDto;
 import com.streaker.controller.user.dto.UserResponseDto;
 import com.streaker.exception.ResourceNotFoundException;
 import com.streaker.service.UserService;
@@ -12,6 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -19,11 +26,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 import java.util.UUID;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -37,6 +43,12 @@ public class UserControllerTest {
 
     @MockitoBean
     private UserService userService;
+
+    @MockitoBean
+    private AuthenticationManager authenticationManager;
+
+    @MockitoBean
+    private JwtService jwtService;
 
     private UUID userId;
     private UserResponseDto userDto;
@@ -132,5 +144,28 @@ public class UserControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("Username is required")));
     }
+
+    @Test
+    void login_shouldReturnJwtToken() throws Exception {
+        LoginUserDto loginDto = new LoginUserDto("john@example.com", "password12345");
+        String expectedToken = "mocked.jwt.token";
+
+        UserDetails userDetails = new org.springframework.security.core.userdetails.User(
+                "john",
+                "password",
+                List.of(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+        Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null);
+
+        when(authenticationManager.authenticate(any())).thenReturn(auth);
+        when(jwtService.generateToken(userDetails)).thenReturn(expectedToken);
+
+        mockMvc.perform(post("/users/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(loginDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").value(expectedToken));
+    }
+
 
 }

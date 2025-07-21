@@ -6,6 +6,7 @@ import com.streaker.exception.ResourceNotFoundException;
 import com.streaker.model.User;
 import com.streaker.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public List<UserResponseDto> getAllUsers() {
@@ -43,7 +45,7 @@ public class UserServiceImpl implements UserService {
     public UserResponseDto createUser(CreateUserDto userDto) {
         User user = new User();
         user.setUsername(userDto.username());
-        user.setPassword(userDto.password());
+        user.setPassword(passwordEncoder.encode(userDto.password()));
         user.setEmail(userDto.email());
         return mapToDto(userRepository.save(user));
     }

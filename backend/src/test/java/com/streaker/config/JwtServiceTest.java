@@ -1,11 +1,14 @@
 package com.streaker.config;
 
-import com.streaker.model.User;
-import com.streaker.utlis.enums.Role;
+import org.springframework.security.core.userdetails.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.TestPropertySource;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -22,22 +25,29 @@ public class JwtServiceTest {
 
     @Test
     void shouldGenerateAndValidateToken() {
-        User user = new User();
-        user.setUsername("test@example.com");
-        user.setRole(Role.USER);
-        String token = jwtService.generateToken(user);
+        // Create a UserDetails object with a role
+        UserDetails userDetails = new User(
+                "test@example.com",
+                "password123",
+                List.of(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+
+        String token = jwtService.generateToken(userDetails);
 
         assertNotNull(token);
+
         String role = jwtService.extractRole(token);
-        assertEquals("USER", role);
+        assertEquals("ROLE_USER", role);
     }
 
     @Test
     void shouldExtractEmailFromToken() {
-        User user = new User();
-        user.setUsername("test@example.com");
-        user.setRole(Role.USER);
-        String token = jwtService.generateToken(user);
+        UserDetails userDetails = new User(
+                "test@example.com",
+                "password123",
+                List.of(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+        String token = jwtService.generateToken(userDetails);
 
         String extracted = jwtService.extractUsername(token);
         assertEquals("test@example.com", extracted);
@@ -45,14 +55,16 @@ public class JwtServiceTest {
 
     @Test
     void shouldExtractRoleFromToken() {
-        User user = new User();
-        user.setUsername("test@example.com");
-        user.setRole(Role.ADMIN);
+        UserDetails userDetails = new User(
+                "test@example.com",
+                "password123",
+                List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
+        );
 
-        String token = jwtService.generateToken(user);
+        String token = jwtService.generateToken(userDetails);
         String role = jwtService.extractRole(token);
 
-        assertEquals("ADMIN", role);
+        assertEquals("ROLE_ADMIN", role);
     }
 
 }
