@@ -1,16 +1,18 @@
 package com.streaker.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.streaker.controller.user.UserController;
 import com.streaker.controller.user.dto.CreateUserDto;
 import com.streaker.controller.user.dto.UserResponseDto;
 import com.streaker.exception.ResourceNotFoundException;
 import com.streaker.service.UserService;
+import com.streaker.utlis.enums.Role;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -25,7 +27,9 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(UserController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
+@WithMockUser(username = "testadmin", roles = {"USER"})
 public class UserControllerTest {
 
     @Autowired
@@ -41,7 +45,7 @@ public class UserControllerTest {
     @BeforeEach
     void setUp() {
         userId = UUID.randomUUID();
-        userDto = new UserResponseDto(userId, "john", "john@example.com");
+        userDto = new UserResponseDto(userId, "john", "john@example.com", Role.USER);
         createUserDto = new CreateUserDto("john", "john@example.com", "password12345");
     }
 

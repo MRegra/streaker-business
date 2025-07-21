@@ -1,16 +1,17 @@
 package com.streaker.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.streaker.controller.category.CategoryController;
 import com.streaker.controller.category.dto.CategoryRequestDto;
 import com.streaker.controller.category.dto.CategoryResponseDto;
 import com.streaker.service.CategoryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -24,8 +25,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import org.springframework.security.test.context.support.WithMockUser;
 
-public @WebMvcTest(CategoryController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
+@WithMockUser(username = "testadmin", roles = {"USER"})
 class CategoryControllerTest {
 
     @Autowired
@@ -54,6 +58,8 @@ class CategoryControllerTest {
     void testCreateCategory() throws Exception {
         Mockito.when(categoryService.createCategory(eq(userId), any(CategoryRequestDto.class)))
                 .thenReturn(sampleCategoryResponse);
+
+        System.out.println(SecurityContextHolder.getContext().getAuthentication());
 
         mockMvc.perform(post("/users/{userId}/categories", userId)
                         .contentType(MediaType.APPLICATION_JSON)

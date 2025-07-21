@@ -12,5 +12,7 @@ public interface UserService {
 
     UserResponseDto getUserById(UUID id);
 
+    UserResponseDto getUserByUsername(String username);
+
     UserResponseDto createUser(CreateUserDto userDto);
 }

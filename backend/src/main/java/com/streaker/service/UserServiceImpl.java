@@ -26,6 +26,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserResponseDto getUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .map(this::mapToDto)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }
+
+    @Override
     public UserResponseDto getUserById(UUID id) {
         return userRepository.findById(id)
                 .map(this::mapToDto)
@@ -41,6 +48,6 @@ public class UserServiceImpl implements UserService {
     }
 
     private UserResponseDto mapToDto(User user) {
-        return new UserResponseDto(user.getUuid(), user.getUsername(), user.getEmail());
+        return new UserResponseDto(user.getUuid(), user.getUsername(), user.getEmail(), user.getRole());
     }
 }
