@@ -1,6 +1,7 @@
 package com.streaker.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.streaker.PostgresTestContainerConfig;
 import com.streaker.controller.category.dto.CategoryRequestDto;
 import com.streaker.controller.category.dto.CategoryResponseDto;
 import com.streaker.service.CategoryService;
@@ -30,7 +31,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 @SpringBootTest
 @AutoConfigureMockMvc
 @WithMockUser(username = "testadmin", roles = {"USER"})
-class CategoryControllerTest {
+class CategoryControllerTest extends PostgresTestContainerConfig {
 
     @Autowired
     private MockMvc mockMvc;

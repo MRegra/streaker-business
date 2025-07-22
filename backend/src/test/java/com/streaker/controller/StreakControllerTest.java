@@ -1,6 +1,7 @@
 package com.streaker.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.streaker.PostgresTestContainerConfig;
 import com.streaker.config.CustomUserDetailsService;
 import com.streaker.config.JwtService;
 import com.streaker.controller.streak.dto.StreakDto;
@@ -32,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
-public class StreakControllerTest {
+public class StreakControllerTest extends PostgresTestContainerConfig {
 
     @Autowired
     private MockMvc mockMvc;
@@ -69,7 +70,6 @@ public class StreakControllerTest {
         );
 
         User user = new User();
-        user.setUuid(userId);
         user.setUsername("testadmin@example.com");
         user.setEmail("testadmin@example.com");
         user.setPassword("password");

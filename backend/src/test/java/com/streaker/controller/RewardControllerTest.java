@@ -1,6 +1,7 @@
 package com.streaker.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.streaker.PostgresTestContainerConfig;
 import com.streaker.controller.reward.dto.RewardRequestDto;
 import com.streaker.controller.reward.dto.RewardResponseDto;
 import com.streaker.service.RewardService;
@@ -12,6 +13,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -27,8 +29,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 @WithMockUser(username = "testadmin", roles = {"USER"})
-public class RewardControllerTest {
+public class RewardControllerTest extends PostgresTestContainerConfig {
 
     @Autowired
     private MockMvc mockMvc;

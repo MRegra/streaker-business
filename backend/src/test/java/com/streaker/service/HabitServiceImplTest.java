@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,14 +31,23 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ActiveProfiles("test")
 public class HabitServiceImplTest {
 
-    @Mock private HabitRepository habitRepository;
-    @Mock private UserRepository userRepository;
-    @Mock private CategoryRepository categoryRepository;
-    @Mock private StreakRepository streakRepository;
+    @Mock
+    private HabitRepository habitRepository;
 
-    @InjectMocks private HabitServiceImpl habitService;
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private CategoryRepository categoryRepository;
+
+    @Mock
+    private StreakRepository streakRepository;
+
+    @InjectMocks
+    private HabitServiceImpl habitService;
 
     private UUID userId, habitId, categoryId, streakId;
     private User user;

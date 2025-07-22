@@ -1,5 +1,6 @@
 package com.streaker.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.streaker.PostgresTestContainerConfig;
 import com.streaker.controller.habit.dto.HabitRequestDto;
 import com.streaker.controller.habit.dto.HabitResponseDto;
 import com.streaker.service.HabitService;
@@ -12,6 +13,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -28,12 +30,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 @WithMockUser(username = "testadmin", roles = {"USER"})
-public class HabitControllerTest {
+public class HabitControllerTest extends PostgresTestContainerConfig {
 
-    @Autowired private MockMvc mockMvc;
-    @MockitoBean private HabitService habitService;
-    @Autowired private ObjectMapper objectMapper;
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockitoBean
+    private HabitService habitService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     private UUID userId;
     private UUID habitId;

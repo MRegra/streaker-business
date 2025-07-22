@@ -1,6 +1,7 @@
 package com.streaker.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.streaker.PostgresTestContainerConfig;
 import com.streaker.config.JwtService;
 import com.streaker.controller.user.dto.CreateUserDto;
 import com.streaker.controller.user.dto.LoginUserDto;
@@ -20,6 +21,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -35,8 +37,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 @WithMockUser(username = "testadmin", roles = {"USER"})
-public class UserControllerTest {
+public class UserControllerTest extends PostgresTestContainerConfig {
 
     @Autowired
     private MockMvc mockMvc;

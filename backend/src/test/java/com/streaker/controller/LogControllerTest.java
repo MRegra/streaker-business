@@ -1,6 +1,7 @@
 package com.streaker.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.streaker.PostgresTestContainerConfig;
 import com.streaker.config.CustomUserDetailsService;
 import com.streaker.config.JwtService;
 import com.streaker.controller.log.dto.LogRequestDto;
@@ -36,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
-public class LogControllerTest {
+public class LogControllerTest extends PostgresTestContainerConfig {
 
     @Autowired
     private MockMvc mockMvc;
