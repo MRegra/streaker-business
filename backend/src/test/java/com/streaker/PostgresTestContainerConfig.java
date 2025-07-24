@@ -11,7 +11,7 @@ import org.testcontainers.utility.DockerImageName;
 @SpringBootTest
 @ContextConfiguration
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class PostgresTestContainerConfig {
+public class PostgresTestContainerConfig extends BaseIntegrationTest {
 
     // Static container so it’s reused across tests
     static final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>(DockerImageName.parse("postgres:15"))

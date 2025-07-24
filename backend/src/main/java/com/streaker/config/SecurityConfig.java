@@ -37,7 +37,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/users/login", "/users/login", "/users/register", "/api/users/register").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
-                        .requestMatchers("/api/swagger-ui/**", "/api/v3/api-docs/**", "/api/swagger-ui.html", "/actuator/info").hasRole("ADMIN")
+                        .requestMatchers("/api/swagger-ui/**",
+                                "/api/v3/api-docs/**",
+                                "/api/swagger-ui.html",
+                                "/actuator/info",
+                                "/actuator/metrics",
+                                "/actuator/prometheus").hasRole("ADMIN")
                         .requestMatchers("/users/**", "/api/users/**").authenticated()
                         .anyRequest().denyAll()
                 )

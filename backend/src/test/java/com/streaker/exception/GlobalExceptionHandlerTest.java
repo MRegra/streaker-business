@@ -23,9 +23,9 @@ public class GlobalExceptionHandlerTest {
 
         assertEquals(404, response.getStatusCode().value());
         Assertions.assertNotNull(response.getBody());
-        assertEquals("Not Found", response.getBody().getError());
-        assertEquals("Not found", response.getBody().getMessage());
-        assertEquals("/fake-uri", response.getBody().getPath());
+        assertEquals("Not Found", response.getBody().error());
+        assertEquals("Not found", response.getBody().message());
+        assertEquals("/fake-uri", response.getBody().path());
     }
 
     @Test
@@ -37,9 +37,9 @@ public class GlobalExceptionHandlerTest {
 
         assertEquals(400, response.getStatusCode().value());
         Assertions.assertNotNull(response.getBody());
-        assertEquals("Bad Request", response.getBody().getError());
-        assertEquals("Bad input", response.getBody().getMessage());
-        assertEquals("/bad-uri", response.getBody().getPath());
+        assertEquals("Bad Request", response.getBody().error());
+        assertEquals("Bad input", response.getBody().message());
+        assertEquals("/bad-uri", response.getBody().path());
     }
 
     @Test
@@ -51,8 +51,8 @@ public class GlobalExceptionHandlerTest {
 
         assertEquals(500, response.getStatusCode().value());
         Assertions.assertNotNull(response.getBody());
-        assertEquals("Internal Server Error", response.getBody().getError());
-        assertEquals("Something failed", response.getBody().getMessage());
-        assertEquals("/crash", response.getBody().getPath());
+        assertEquals("Internal Server Error", response.getBody().error());
+        assertEquals("Something failed", response.getBody().message());
+        assertEquals("/crash", response.getBody().path());
     }
 }

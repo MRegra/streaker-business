@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,6 +30,7 @@ public class RewardController {
     private final RewardService rewardService;
 
     @Operation(summary = "Create a new reward for a user")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PostMapping
     public ResponseEntity<RewardResponseDto> createReward(
             @PathVariable UUID userId,
@@ -37,12 +39,14 @@ public class RewardController {
     }
 
     @Operation(summary = "Get all rewards for a user")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping
     public ResponseEntity<List<RewardResponseDto>> getRewards(@PathVariable UUID userId) {
         return ResponseEntity.ok(rewardService.getRewardsByUser(userId));
     }
 
     @Operation(summary = "Unlock a reward")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PostMapping("/{rewardId}/unlock")
     public ResponseEntity<RewardResponseDto> unlockReward(
             @PathVariable UUID rewardId) {
