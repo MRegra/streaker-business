@@ -4,3 +4,5 @@
 /backend/.mvn/wrapper/maven-wrapper.properties
 /backend/mvnw.cmd
 /frontend/.vscode
+
+.env
