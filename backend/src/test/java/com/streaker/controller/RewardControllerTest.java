@@ -67,7 +67,7 @@ public class RewardControllerTest extends PostgresTestContainerConfig {
     void testCreateReward() throws Exception {
         Mockito.when(rewardService.createReward(any(), any())).thenReturn(responseDto);
 
-        mockMvc.perform(post("/users/{userId}/rewards", userId)
+        mockMvc.perform(post("/v1/users/{userId}/rewards", userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isOk())
@@ -79,7 +79,7 @@ public class RewardControllerTest extends PostgresTestContainerConfig {
     void testGetRewardsByUser() throws Exception {
         Mockito.when(rewardService.getRewardsByUser(userId)).thenReturn(List.of(responseDto));
 
-        mockMvc.perform(get("/users/{userId}/rewards", userId))
+        mockMvc.perform(get("/v1/users/{userId}/rewards", userId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].uuid").value(rewardId.toString()));
@@ -99,7 +99,7 @@ public class RewardControllerTest extends PostgresTestContainerConfig {
 
         Mockito.when(rewardService.unlockReward(rewardId)).thenReturn(unlocked);
 
-        mockMvc.perform(post("/users/{userId}/rewards/{rewardId}/unlock", userId, rewardId))
+        mockMvc.perform(post("/v1/users/{userId}/rewards/{rewardId}/unlock", userId, rewardId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.unlocked").value(true))
                 .andExpect(jsonPath("$.uuid").value(rewardId.toString()));

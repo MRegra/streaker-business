@@ -29,7 +29,7 @@ import java.util.UUID;
 
 @Tag(name = "User API", description = "Operations related to users")
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/v1/users")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
 public class UserController {

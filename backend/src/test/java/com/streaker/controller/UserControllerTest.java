@@ -68,7 +68,7 @@ public class UserControllerTest extends PostgresTestContainerConfig {
     void getAllUsers_shouldReturnList() throws Exception {
         when(userService.getAllUsers()).thenReturn(List.of(userDto));
 
-        mockMvc.perform(get("/users"))
+        mockMvc.perform(get("/v1/users"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].username").value("john"));
     }
@@ -77,7 +77,7 @@ public class UserControllerTest extends PostgresTestContainerConfig {
     void getUserById_shouldReturnUser() throws Exception {
         when(userService.getUserById(userId)).thenReturn(userDto);
 
-        mockMvc.perform(get("/users/{id}", userId))
+        mockMvc.perform(get("/v1/users/{id}", userId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username").value("john"));
     }
@@ -86,7 +86,7 @@ public class UserControllerTest extends PostgresTestContainerConfig {
     void createUser_shouldReturnCreatedUser() throws Exception {
         when(userService.createUser(any())).thenReturn(userDto);
 
-        mockMvc.perform(post("/users/register")
+        mockMvc.perform(post("/v1/users/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(createUserDto)))
                 .andExpect(status().isOk())
@@ -98,11 +98,11 @@ public class UserControllerTest extends PostgresTestContainerConfig {
         when(userService.getUserById(userId))
                 .thenThrow(new ResourceNotFoundException("User not found"));
 
-        mockMvc.perform(get("/users/{id}", userId))
+        mockMvc.perform(get("/v1/users/{id}", userId))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Not Found"))
                 .andExpect(jsonPath("$.message").value("User not found"))
-                .andExpect(jsonPath("$.path").value("/users/" + userId));
+                .andExpect(jsonPath("$.path").value("/v1/users/" + userId));
     }
 
     @Test
@@ -110,13 +110,13 @@ public class UserControllerTest extends PostgresTestContainerConfig {
         when(userService.createUser(any()))
                 .thenThrow(new IllegalArgumentException("Invalid email"));
 
-        mockMvc.perform(post("/users/register")
+        mockMvc.perform(post("/v1/users/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(createUserDto)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Bad Request"))
                 .andExpect(jsonPath("$.message").value("Invalid email"))
-                .andExpect(jsonPath("$.path").value("/users/register"));
+                .andExpect(jsonPath("$.path").value("/v1/users/register"));
     }
 
     @Test
@@ -124,11 +124,11 @@ public class UserControllerTest extends PostgresTestContainerConfig {
         when(userService.getAllUsers())
                 .thenThrow(new RuntimeException("Database crash"));
 
-        mockMvc.perform(get("/users"))
+        mockMvc.perform(get("/v1/users"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.error").value("Internal Server Error"))
                 .andExpect(jsonPath("$.message").value("Database crash"))
-                .andExpect(jsonPath("$.path").value("/users"));
+                .andExpect(jsonPath("$.path").value("/v1/users"));
     }
 
     @Test
@@ -141,7 +141,7 @@ public class UserControllerTest extends PostgresTestContainerConfig {
             }
         """;
 
-        mockMvc.perform(post("/users/register")
+        mockMvc.perform(post("/v1/users/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(invalidJson))
                 .andExpect(status().isBadRequest())
@@ -163,7 +163,7 @@ public class UserControllerTest extends PostgresTestContainerConfig {
         when(authenticationManager.authenticate(any())).thenReturn(auth);
         when(jwtService.generateToken(userDetails)).thenReturn(expectedToken);
 
-        mockMvc.perform(post("/users/login")
+        mockMvc.perform(post("/v1/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(loginDto)))
                 .andExpect(status().isOk())

@@ -93,7 +93,7 @@ public class StreakControllerTest extends PostgresTestContainerConfig {
     void testGetStreaksByUser() throws Exception {
         Mockito.when(streakService.getStreaksByUser(userId)).thenReturn(List.of(streakDto));
 
-        mockMvc.perform(get("/users/{userId}/streaks", userId)
+        mockMvc.perform(get("/v1/users/{userId}/streaks", userId)
                         .header("Authorization", "Bearer " + jwtToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
@@ -104,7 +104,7 @@ public class StreakControllerTest extends PostgresTestContainerConfig {
     void testGetStreakById() throws Exception {
         Mockito.when(streakService.getStreak(streakId)).thenReturn(streakDto);
 
-        mockMvc.perform(get("/users/{userId}/streaks/{id}", userId, streakId)
+        mockMvc.perform(get("/v1/users/{userId}/streaks/{id}", userId, streakId)
                         .header("Authorization", "Bearer " + jwtToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.uuid").value(streakId.toString()))

@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/users/{userId}/streaks")
+@RequestMapping("/v1/users/{userId}/streaks")
 @RequiredArgsConstructor
 @Tag(name = "Streak", description = "View user streaks")
 @SecurityRequirement(name = "bearerAuth")

@@ -151,3 +151,9 @@ Marcelo (TBD)
 
 Building tools, workflows, and systems that compound.
 
+
+
+
+Full docker clean-up:
+
+    docker compose down -v --remove-orphans && docker system prune -af --volumes && docker compose build --no-cache && docker compose up

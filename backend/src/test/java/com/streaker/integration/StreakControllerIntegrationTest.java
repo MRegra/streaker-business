@@ -75,7 +75,7 @@ public class StreakControllerIntegrationTest extends PostgresTestContainerConfig
         streak2.setEndDate(LocalDate.now().minusDays(6));
         streakRepository.save(streak2);
 
-        mockMvc.perform(get("/users/" + userId + "/streaks")
+        mockMvc.perform(get("/v1/users/" + userId + "/streaks")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2));
@@ -94,7 +94,7 @@ public class StreakControllerIntegrationTest extends PostgresTestContainerConfig
         streak.setIsActive(true);
         streak = streakRepository.save(streak);
 
-        mockMvc.perform(get("/users/" + userId + "/streaks/" + streak.getUuid())
+        mockMvc.perform(get("/v1/users/" + userId + "/streaks/" + streak.getUuid())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.uuid").value(streak.getUuid().toString()));

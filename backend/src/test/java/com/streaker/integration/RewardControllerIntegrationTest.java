@@ -60,7 +60,7 @@ public class RewardControllerIntegrationTest extends PostgresTestContainerConfig
     public void shouldCreateReward() throws Exception {
         RewardRequestDto dto = new RewardRequestDto("Buy Coffee", "Morning treat", 10);
 
-        mockMvc.perform(post("/users/" + userId + "/rewards")
+        mockMvc.perform(post("/v1/users/" + userId + "/rewards")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
@@ -90,7 +90,7 @@ public class RewardControllerIntegrationTest extends PostgresTestContainerConfig
         reward2.setUser(user);
         rewardRepository.save(reward2);
 
-        mockMvc.perform(get("/users/" + userId + "/rewards"))
+        mockMvc.perform(get("/v1/users/" + userId + "/rewards"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2));
     }
@@ -106,7 +106,7 @@ public class RewardControllerIntegrationTest extends PostgresTestContainerConfig
         reward.setUser(user);
         rewardRepository.save(reward);
 
-        mockMvc.perform(post("/users/" + userId + "/rewards/" + reward.getUuid() + "/unlock"))
+        mockMvc.perform(post("/v1/users/" + userId + "/rewards/" + reward.getUuid() + "/unlock"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.unlocked").value(true));
     }
@@ -116,7 +116,7 @@ public class RewardControllerIntegrationTest extends PostgresTestContainerConfig
         User user = userRepository.findById(userId).orElseThrow();
         RewardRequestDto invalidDto = new RewardRequestDto(null, null, 5);
 
-        mockMvc.perform(post("/users/" + userId + "/rewards")
+        mockMvc.perform(post("/v1/users/" + userId + "/rewards")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidDto)))
                 .andExpect(status().isBadRequest());

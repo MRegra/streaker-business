@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/users/{userId}/categories")
+@RequestMapping("/v1/users/{userId}/categories")
 @RequiredArgsConstructor
 @Tag(name = "Category", description = "Manage user categories")
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "CategoryService is a Spring-managed bean and safe to inject")

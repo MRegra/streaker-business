@@ -94,7 +94,7 @@ class LogControllerIntegrationTest extends PostgresTestContainerConfig {
     void createLog_shouldPersistAndReturnLog() throws Exception {
         LogRequestDto dto = new LogRequestDto(LocalDate.now(), true);
 
-        mockMvc.perform(post("/users/habits/{habitId}/logs", habitId)
+        mockMvc.perform(post("/v1/users/habits/{habitId}/logs", habitId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
@@ -114,7 +114,7 @@ class LogControllerIntegrationTest extends PostgresTestContainerConfig {
         log.setHabit(habitRepository.findById(habitId).orElseThrow());
         logRepository.save(log);
 
-        mockMvc.perform(get("/users/habits/{habitId}/logs", habitId))
+        mockMvc.perform(get("/v1/users/habits/{habitId}/logs", habitId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].completed").value(true));
@@ -128,7 +128,7 @@ class LogControllerIntegrationTest extends PostgresTestContainerConfig {
         log.setHabit(habitRepository.findById(habitId).orElseThrow());
         log = logRepository.save(log);
 
-        mockMvc.perform(get("/users/habits/{habitId}/logs/{logId}", habitId, log.getUuid()))
+        mockMvc.perform(get("/v1/users/habits/{habitId}/logs/{logId}", habitId, log.getUuid()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.uuid").value(log.getUuid().toString()))
                 .andExpect(jsonPath("$.completed").value(false));
@@ -142,7 +142,7 @@ class LogControllerIntegrationTest extends PostgresTestContainerConfig {
         log.setHabit(habitRepository.findById(habitId).orElseThrow());
         log = logRepository.save(log);
 
-        mockMvc.perform(post("/users/habits/{habitId}/logs/{logId}/complete", habitId, log.getUuid()))
+        mockMvc.perform(post("/v1/users/habits/{habitId}/logs/{logId}/complete", habitId, log.getUuid()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.completed").value(true));
 

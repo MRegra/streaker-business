@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/users/{userId}/rewards")
+@RequestMapping("/v1/users/{userId}/rewards")
 @RequiredArgsConstructor
 @Tag(name = "Reward", description = "Manage user rewards")
 @SecurityRequirement(name = "bearerAuth")

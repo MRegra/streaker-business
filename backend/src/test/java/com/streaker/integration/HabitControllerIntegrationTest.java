@@ -98,7 +98,7 @@ public class HabitControllerIntegrationTest extends PostgresTestContainerConfig 
                 streakId
         );
 
-        mockMvc.perform(post("/users/{userId}/habits", userId)
+        mockMvc.perform(post("/v1/users/{userId}/habits", userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
@@ -122,7 +122,7 @@ public class HabitControllerIntegrationTest extends PostgresTestContainerConfig 
         habit.setStreak(streakRepository.findById(streakId).orElseThrow());
         habitRepository.save(habit);
 
-        mockMvc.perform(get("/users/{userId}/habits", userId))
+        mockMvc.perform(get("/v1/users/{userId}/habits", userId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].name").value("Run-Habit"));
@@ -139,7 +139,7 @@ public class HabitControllerIntegrationTest extends PostgresTestContainerConfig 
         habit.setStreak(streakRepository.findById(streakId).orElseThrow());
         habit = habitRepository.save(habit);
 
-        mockMvc.perform(get("/users/{userId}/habits/{habitId}", userId, habit.getUuid()))
+        mockMvc.perform(get("/v1/users/{userId}/habits/{habitId}", userId, habit.getUuid()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.uuid").value(habit.getUuid().toString()));
     }
@@ -155,7 +155,7 @@ public class HabitControllerIntegrationTest extends PostgresTestContainerConfig 
         habit.setStreak(streakRepository.findById(streakId).orElseThrow());
         habit = habitRepository.save(habit);
 
-        mockMvc.perform(delete("/users/{userId}/habits/{habitId}", userId, habit.getUuid()))
+        mockMvc.perform(delete("/v1/users/{userId}/habits/{habitId}", userId, habit.getUuid()))
                 .andExpect(status().isNoContent());
 
         assertThat(habitRepository.findById(habit.getUuid())).isEmpty();

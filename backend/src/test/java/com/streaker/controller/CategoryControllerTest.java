@@ -62,7 +62,7 @@ class CategoryControllerTest extends PostgresTestContainerConfig {
 
         System.out.println(SecurityContextHolder.getContext().getAuthentication());
 
-        mockMvc.perform(post("/users/{userId}/categories", userId)
+        mockMvc.perform(post("/v1/users/{userId}/categories", userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(sampleCategory)))
                 .andExpect(status().isOk())
@@ -76,7 +76,7 @@ class CategoryControllerTest extends PostgresTestContainerConfig {
         Mockito.when(categoryService.getCategoriesByUser(userId))
                 .thenReturn(List.of(sampleCategoryResponse));
 
-        mockMvc.perform(get("/users/{userId}/categories", userId))
+        mockMvc.perform(get("/v1/users/{userId}/categories", userId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].name").value("Fitness"));
@@ -87,14 +87,14 @@ class CategoryControllerTest extends PostgresTestContainerConfig {
         Mockito.when(categoryService.getCategoryById(categoryId))
                 .thenReturn(sampleCategoryResponse);
 
-        mockMvc.perform(get("/users/{userId}/categories/{id}", userId, categoryId))
+        mockMvc.perform(get("/v1/users/{userId}/categories/{id}", userId, categoryId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.uuid").value(categoryId.toString()));
     }
 
     @Test
     void testDeleteCategory() throws Exception {
-        mockMvc.perform(delete("/users/{userId}/categories/{id}", userId, categoryId))
+        mockMvc.perform(delete("/v1/users/{userId}/categories/{id}", userId, categoryId))
                 .andExpect(status().isNoContent());
 
         Mockito.verify(categoryService).deleteCategory(categoryId);

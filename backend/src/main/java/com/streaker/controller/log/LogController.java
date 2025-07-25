@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/users/habits/{habitId}/logs")
+@RequestMapping("/v1/users/habits/{habitId}/logs")
 @RequiredArgsConstructor
 @Tag(name = "Log", description = "Track habit logs")
 @SecurityRequirement(name = "bearerAuth")

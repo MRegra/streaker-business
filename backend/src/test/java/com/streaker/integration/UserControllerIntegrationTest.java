@@ -59,7 +59,7 @@ public class UserControllerIntegrationTest extends PostgresTestContainerConfig {
     void createUser_shouldPersistAndReturnUser() throws Exception {
         CreateUserDto userDto = new CreateUserDto("john", "john@example.com", "securePassword");
 
-        mockMvc.perform(post("/users/register")
+        mockMvc.perform(post("/v1/users/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userDto)))
                 .andExpect(status().isOk())
@@ -79,7 +79,7 @@ public class UserControllerIntegrationTest extends PostgresTestContainerConfig {
         user.setPassword("encryptedPassword");
         user = userRepository.save(user);
 
-        mockMvc.perform(get("/users/{id}", user.getUuid()))
+        mockMvc.perform(get("/v1/users/{id}", user.getUuid()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username").value("jane"))
                 .andExpect(jsonPath("$.email").value("jane@example.com"));
@@ -87,7 +87,7 @@ public class UserControllerIntegrationTest extends PostgresTestContainerConfig {
 
     @Test
     void getUserById_shouldReturn404ForMissing() throws Exception {
-        mockMvc.perform(get("/users/{id}", UUID.randomUUID()))
+        mockMvc.perform(get("/v1/users/{id}", UUID.randomUUID()))
                 .andExpect(status().isNotFound());
     }
 

@@ -63,7 +63,7 @@ public class HabitControllerTest extends PostgresTestContainerConfig {
     void testCreateHabit() throws Exception {
         Mockito.when(habitService.createHabit(any(), any())).thenReturn(responseDto);
 
-        mockMvc.perform(post("/users/{userId}/habits", userId)
+        mockMvc.perform(post("/v1/users/{userId}/habits", userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isOk())
@@ -74,7 +74,7 @@ public class HabitControllerTest extends PostgresTestContainerConfig {
     void testGetHabitsForUser() throws Exception {
         Mockito.when(habitService.getHabitsForUser(userId)).thenReturn(List.of(responseDto));
 
-        mockMvc.perform(get("/users/{userId}/habits", userId))
+        mockMvc.perform(get("/v1/users/{userId}/habits", userId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1));
     }
@@ -83,14 +83,14 @@ public class HabitControllerTest extends PostgresTestContainerConfig {
     void testGetHabitById() throws Exception {
         Mockito.when(habitService.getHabitById(habitId)).thenReturn(responseDto);
 
-        mockMvc.perform(get("/users/{userId}/habits/{habitId}", userId, habitId))
+        mockMvc.perform(get("/v1/users/{userId}/habits/{habitId}", userId, habitId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.uuid").value(habitId.toString()));
     }
 
     @Test
     void testDeleteHabit() throws Exception {
-        mockMvc.perform(delete("/users/{userId}/habits/{habitId}", userId, habitId))
+        mockMvc.perform(delete("/v1/users/{userId}/habits/{habitId}", userId, habitId))
                 .andExpect(status().isNoContent());
     }
 }

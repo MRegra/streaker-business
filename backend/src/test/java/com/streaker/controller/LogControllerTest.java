@@ -95,7 +95,7 @@ public class LogControllerTest extends PostgresTestContainerConfig {
     void testCreateLog() throws Exception {
         Mockito.when(logService.createLog(any(), any())).thenReturn(responseDto);
 
-        mockMvc.perform(post("/users/habits/{habitId}/logs", habitId)
+        mockMvc.perform(post("/v1/users/habits/{habitId}/logs", habitId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto))
                         .header("Authorization", "Bearer " + jwtToken))
@@ -108,7 +108,7 @@ public class LogControllerTest extends PostgresTestContainerConfig {
     void testGetLogsByHabit() throws Exception {
         Mockito.when(logService.getLogsByHabit(habitId)).thenReturn(List.of(responseDto));
 
-        mockMvc.perform(get("/users/habits/{habitId}/logs", habitId)
+        mockMvc.perform(get("/v1/users/habits/{habitId}/logs", habitId)
                         .header("Authorization", "Bearer " + jwtToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
@@ -119,7 +119,7 @@ public class LogControllerTest extends PostgresTestContainerConfig {
     void testGetLog() throws Exception {
         Mockito.when(logService.getLog(logId)).thenReturn(responseDto);
 
-        mockMvc.perform(get("/users/habits/{habitId}/logs/{logId}", habitId, logId)
+        mockMvc.perform(get("/v1/users/habits/{habitId}/logs/{logId}", habitId, logId)
                         .header("Authorization", "Bearer " + jwtToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.uuid").value(logId.toString()));
@@ -129,7 +129,7 @@ public class LogControllerTest extends PostgresTestContainerConfig {
     void testMarkLogCompleted() throws Exception {
         Mockito.when(logService.markLogCompleted(logId)).thenReturn(responseDto);
 
-        mockMvc.perform(post("/users/habits/{habitId}/logs/{logId}/complete", habitId, logId)
+        mockMvc.perform(post("/v1/users/habits/{habitId}/logs/{logId}/complete", habitId, logId)
                         .header("Authorization", "Bearer " + jwtToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.completed").value(true));

@@ -35,15 +35,15 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/api/users/login", "/users/login", "/users/register", "/api/users/register").permitAll()
-                        .requestMatchers("/actuator/health").permitAll()
-                        .requestMatchers("/api/swagger-ui/**",
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users/login", "/v1/users/login", "/v1/users/register", "/api/v1/users/register").permitAll()
+                        .requestMatchers("/api/actuator/health", "/actuator/health").permitAll()
+                        .requestMatchers("/api/v1/swagger-ui/**",
                                 "/api/v3/api-docs/**",
-                                "/api/swagger-ui.html",
-                                "/actuator/info",
-                                "/actuator/metrics",
-                                "/actuator/prometheus").hasRole("ADMIN")
-                        .requestMatchers("/users/**", "/api/users/**").authenticated()
+                                "/api/swagger-ui.html", "/swagger-ui.html",
+                                "/api/actuator/info", "/actuator/info",
+                                "/api/actuator/metrics", "/actuator/metrics",
+                                "/api/actuator/prometheus", "/actuator/prometheus").hasRole("ADMIN")
+                        .requestMatchers("/v1/users/**", "/api/v1/users/**").authenticated()
                         .anyRequest().denyAll()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

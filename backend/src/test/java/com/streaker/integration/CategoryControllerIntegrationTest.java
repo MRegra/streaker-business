@@ -62,7 +62,7 @@ class CategoryControllerIntegrationTest extends PostgresTestContainerConfig {
     void createCategory_shouldPersistAndReturnCategory() throws Exception {
         var dto = new CategoryRequestDto("Fitness", "#FF0000");
 
-        mockMvc.perform(post("/users/{userId}/categories", userId)
+        mockMvc.perform(post("/v1/users/{userId}/categories", userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
@@ -82,7 +82,7 @@ class CategoryControllerIntegrationTest extends PostgresTestContainerConfig {
         category.setUser(userRepository.findById(userId).orElseThrow());
         categoryRepository.save(category);
 
-        mockMvc.perform(get("/users/{userId}/categories", userId))
+        mockMvc.perform(get("/v1/users/{userId}/categories", userId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].name").value("Health"));
@@ -96,7 +96,7 @@ class CategoryControllerIntegrationTest extends PostgresTestContainerConfig {
         category.setUser(userRepository.findById(userId).orElseThrow());
         category = categoryRepository.save(category);
 
-        mockMvc.perform(get("/users/{userId}/categories/{id}", userId, category.getUuid()))
+        mockMvc.perform(get("/v1/users/{userId}/categories/{id}", userId, category.getUuid()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.uuid").value(category.getUuid().toString()));
     }
@@ -109,7 +109,7 @@ class CategoryControllerIntegrationTest extends PostgresTestContainerConfig {
         category.setUser(userRepository.findById(userId).orElseThrow());
         category = categoryRepository.save(category);
 
-        mockMvc.perform(delete("/users/{userId}/categories/{id}", userId, category.getUuid()))
+        mockMvc.perform(delete("/v1/users/{userId}/categories/{id}", userId, category.getUuid()))
                 .andExpect(status().isNoContent());
 
         assertThat(categoryRepository.findById(category.getUuid())).isEmpty();
