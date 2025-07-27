@@ -1,6 +1,7 @@
 package com.streaker.config;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -20,6 +21,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableMethodSecurity // Enables @PreAuthorize, etc.
 public class SecurityConfig {
 
+    @Value("${environment:}")
+    private String environment;
+
     private final JwtAuthFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
 
@@ -34,22 +38,22 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/api/v1/users/login", "/v1/users/login", "/v1/users/register", "/api/v1/users/register").permitAll()
-                        .requestMatchers("/api/actuator/health", "/actuator/health").permitAll()
-                        .requestMatchers("/api/swagger-ui/**",
-                                "/api/v3/api-docs/**",
-                                "/api/swagger-ui.html", "/swagger-ui.html",
-                                "/api/actuator/info", "/actuator/info",
-                                "/api/actuator/metrics", "/actuator/metrics",
-                                "/api/actuator/prometheus", "/actuator/prometheus").hasRole("ADMIN")
-                        .requestMatchers("/v1/users/**", "/api/v1/users/**").authenticated()
-                        .anyRequest().denyAll()
-                )
+                .authorizeHttpRequests(auth -> {
+                    auth.requestMatchers(HttpMethod.POST, "/api/v1/users/login", "/api/v1/users/register").permitAll();
+                    auth.requestMatchers("/api/actuator/health").permitAll();
+                    auth.requestMatchers("/api/v1/users/**").authenticated();
+
+                    if (isDev()) {
+                        auth.anyRequest().permitAll();
+                    } else {
+                        auth.anyRequest().denyAll();
+                    }
+                })
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
+
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
@@ -59,5 +63,9 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    private boolean isDev() {
+        return environment.equalsIgnoreCase("DEV");
     }
 }

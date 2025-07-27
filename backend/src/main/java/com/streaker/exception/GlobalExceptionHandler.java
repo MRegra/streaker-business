@@ -17,7 +17,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException ex, HttpServletRequest request) {
-        log.error("Unhandled exception occurred", ex);
+        log.error("Not Found exception at {} {} from {}: {}",
+                request.getMethod(),
+                request.getRequestURI(),
+                request.getRemoteAddr(),
+                ex.getMessage(),
+                ex);
         return new ResponseEntity<>(new ErrorResponse(
                 Instant.now(),
                 HttpStatus.NOT_FOUND.value(),
@@ -29,7 +34,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleBadRequest(IllegalArgumentException ex, HttpServletRequest request) {
-        log.error("Unhandled exception occurred", ex);
+        log.error("Bad Request exception at {} {} from {}: {}",
+                request.getMethod(),
+                request.getRequestURI(),
+                request.getRemoteAddr(),
+                ex.getMessage(),
+                ex);
         return new ResponseEntity<>(new ErrorResponse(
                 Instant.now(),
                 HttpStatus.BAD_REQUEST.value(),
@@ -41,7 +51,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex, HttpServletRequest request) {
-        log.error("Unhandled exception occurred", ex);
+        log.error("Unhandled exception occurred at {} {} from {}: {}",
+                request.getMethod(),
+                request.getRequestURI(),
+                request.getRemoteAddr(),
+                ex.getMessage(),
+                ex);
         return new ResponseEntity<>(new ErrorResponse(
                 Instant.now(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
@@ -53,7 +68,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex, HttpServletRequest request) {
-        log.error("Unhandled exception occurred", ex);
+        log.error("Validation exception occurred at {} {} from {}: {}",
+                request.getMethod(),
+                request.getRequestURI(),
+                request.getRemoteAddr(),
+                ex.getMessage(),
+                ex);
         String errorMsg = ex.getBindingResult().getFieldErrors().stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .collect(Collectors.joining("; "));
