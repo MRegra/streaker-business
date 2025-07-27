@@ -32,8 +32,8 @@ public abstract class BaseIntegrationTest {
         // Order matters!
         logRepository.deleteAll();
         habitRepository.deleteAll();
-        categoryRepository.deleteAll();
         streakRepository.deleteAll();
+        categoryRepository.deleteAll();
         rewardRepository.deleteAll();
         userRepository.deleteAll();
     }

@@ -1,5 +1,6 @@
 package com.streaker.exception;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -85,5 +86,54 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
         return ResponseEntity.badRequest().body(error);
+    }
+
+    @ExceptionHandler(UnauthorizedAccessException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthorizedAccess(
+            UnauthorizedAccessException ex, HttpServletRequest request) {
+        log.warn("Unauthorized access at {} {} from {}: {}",
+                request.getMethod(),
+                request.getRequestURI(),
+                request.getRemoteAddr(),
+                ex.getMessage(),
+                ex);
+
+        ErrorResponse error = new ErrorResponse(
+                Instant.now(),
+                HttpStatus.FORBIDDEN.value(),
+                "Forbidden",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(JwtException.class)
+    public ResponseEntity<String> handleJwtException(JwtException ex, HttpServletRequest request) {
+        log.warn("Unauthorized access at {} {} from {}: {}",
+                request.getMethod(),
+                request.getRequestURI(),
+                request.getRemoteAddr(),
+                ex.getMessage(),
+                ex);
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body("Invalid or malformed JWT: " + ex.getMessage());
+    }
+
+    @ExceptionHandler(SecurityException.class)
+    public ResponseEntity<String> handleSecurityException(SecurityException ex, HttpServletRequest request) {
+        log.warn("Unauthorized access at {} {} from {}: {}",
+                request.getMethod(),
+                request.getRequestURI(),
+                request.getRemoteAddr(),
+                ex.getMessage(),
+                ex);
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body("Unauthorized access: " + ex.getMessage());
     }
 }

@@ -1,41 +1,63 @@
 package com.streaker.config;
 
 import com.streaker.PostgresTestContainerConfig;
-import org.springframework.security.core.userdetails.User;
+import com.streaker.controller.user.dto.UserResponseDto;
+import com.streaker.utlis.enums.Role;
+import io.jsonwebtoken.MalformedJwtException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@TestPropertySource(properties = {
-        "jwt.secret=your-test-secret-key-your-test-secret-key",
-        "jwt.expiration-ms=3600000"
-})
 public class JwtServiceTest extends PostgresTestContainerConfig {
 
     @Autowired
     private JwtService jwtService;
+    private UserDetails userDetails, adminUserDetails;
+    private UserResponseDto userResponseDto;
+    private UserResponseDto adminUserResponseDto;
 
-    @Test
-    void shouldGenerateAndValidateToken() {
-        // Create a UserDetails object with a role
-        UserDetails userDetails = new User(
+    @BeforeEach
+    void setup() {
+        userResponseDto = new UserResponseDto(
+                UUID.randomUUID(),
+                "test@example.com",
+                "test@example.com",
+                Role.USER
+        );
+        adminUserResponseDto = new UserResponseDto(
+                UUID.randomUUID(),
+                "test1@example.com",
+                "test1@example.com",
+                Role.ADMIN
+        );
+        userDetails = new User(
                 "test@example.com",
                 "password123",
                 List.of(new SimpleGrantedAuthority("ROLE_USER"))
         );
+        adminUserDetails = new User(
+                "test1@example.com",
+                "password123",
+                List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
+        );
+    }
 
-        String token = jwtService.generateToken(userDetails);
+    @Test
+    void shouldGenerateAndValidateToken() throws Exception {
+        String token = jwtService.generateToken(userDetails, userResponseDto);
 
         assertNotNull(token);
 
@@ -44,27 +66,16 @@ public class JwtServiceTest extends PostgresTestContainerConfig {
     }
 
     @Test
-    void shouldExtractEmailFromToken() {
-        UserDetails userDetails = new User(
-                "test@example.com",
-                "password123",
-                List.of(new SimpleGrantedAuthority("ROLE_USER"))
-        );
-        String token = jwtService.generateToken(userDetails);
+    void shouldExtractEmailFromToken() throws MalformedJwtException {
+        String token = jwtService.generateToken(userDetails, userResponseDto);
 
         String extracted = jwtService.extractUsername(token);
         assertEquals("test@example.com", extracted);
     }
 
     @Test
-    void shouldExtractRoleFromToken() {
-        UserDetails userDetails = new User(
-                "test@example.com",
-                "password123",
-                List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
-        );
-
-        String token = jwtService.generateToken(userDetails);
+    void shouldExtractRoleFromToken() throws Exception {
+        String token = jwtService.generateToken(adminUserDetails, adminUserResponseDto);
         String role = jwtService.extractRole(token);
 
         assertEquals("ROLE_ADMIN", role);

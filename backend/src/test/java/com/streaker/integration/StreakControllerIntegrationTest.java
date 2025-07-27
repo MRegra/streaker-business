@@ -1,10 +1,12 @@
 package com.streaker.integration;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streaker.PostgresTestContainerConfig;
 import com.streaker.model.Streak;
 import com.streaker.model.User;
 import com.streaker.repository.StreakRepository;
 import com.streaker.repository.UserRepository;
+import com.streaker.utils.TestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.time.LocalDate;
 import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -31,13 +31,10 @@ public class StreakControllerIntegrationTest extends PostgresTestContainerConfig
 
     @Autowired
     private MockMvc mockMvc;
-
     @Autowired
     private ObjectMapper objectMapper;
-
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private StreakRepository streakRepository;
 
@@ -47,10 +44,7 @@ public class StreakControllerIntegrationTest extends PostgresTestContainerConfig
     public void setup() {
         cleanDatabase();
 
-        User user = new User();
-        user.setUsername("testuser-streak");
-        user.setEmail("testuser-streak@example.com");
-        user.setPassword("password123");
+        User user = TestDataFactory.createUser("testuser-streak", "testuser-streak@example.com", "password123");
         user = userRepository.save(user);
         this.userId = user.getUuid();
     }
@@ -59,22 +53,10 @@ public class StreakControllerIntegrationTest extends PostgresTestContainerConfig
     public void shouldReturnAllStreaksForUser() throws Exception {
         User user = userRepository.findById(userId).orElseThrow();
 
-        Streak streak1 = new Streak();
-        streak1.setName("reading-streak");
-        streak1.setUser(user);
-        streak1.setIsActive(true);
-        streak1.setCurrentCount(0);
-        streak1.setStartDate(LocalDate.now().minusDays(5));
-        streak1.setEndDate(LocalDate.now().minusDays(1));
+        Streak streak1 = TestDataFactory.createStreak(user);
         streakRepository.save(streak1);
 
-        Streak streak2 = new Streak();
-        streak2.setName("reading-streak1");
-        streak2.setUser(user);
-        streak2.setCurrentCount(0);
-        streak2.setIsActive(true);
-        streak2.setStartDate(LocalDate.now().minusDays(10));
-        streak2.setEndDate(LocalDate.now().minusDays(6));
+        Streak streak2 = TestDataFactory.createStreak(user);
         streakRepository.save(streak2);
 
         mockMvc.perform(get("/v1/users/" + userId + "/streaks")
@@ -87,13 +69,7 @@ public class StreakControllerIntegrationTest extends PostgresTestContainerConfig
     public void shouldReturnSingleStreakById() throws Exception {
         User user = userRepository.findById(userId).orElseThrow();
 
-        Streak streak = new Streak();
-        streak.setUser(user);
-        streak.setName("reading-streak2");
-        streak.setStartDate(LocalDate.now().minusDays(3));
-        streak.setEndDate(LocalDate.now());
-        streak.setCurrentCount(0);
-        streak.setIsActive(true);
+        Streak streak = TestDataFactory.createStreak(user);
         streak = streakRepository.save(streak);
 
         mockMvc.perform(get("/v1/users/" + userId + "/streaks/" + streak.getUuid())

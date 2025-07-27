@@ -48,6 +48,13 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    public CategoryResponseDto getCategoryByUserUuidAndCategoryId(UUID userUuid, UUID categoryUuid) {
+        return categoryRepository.findByUserUuidAndUuid(userUuid, categoryUuid)
+                .map(this::mapToDto)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+    }
+
+    @Override
     public void deleteCategory(UUID id) {
         categoryRepository.deleteById(id);
     }

@@ -1,5 +1,6 @@
 package com.streaker.controller.category;
 
+import com.streaker.config.JwtAuthorizationValidator;
 import com.streaker.controller.category.dto.CategoryRequestDto;
 import com.streaker.controller.category.dto.CategoryResponseDto;
 import com.streaker.service.CategoryService;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,36 +32,53 @@ import java.util.UUID;
 @SecurityRequirement(name = "bearerAuth")
 public class CategoryController {
 
+    private final JwtAuthorizationValidator jwtAuthorizationValidator;
+
     private final CategoryService categoryService;
 
     @Operation(summary = "Create a new category")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PostMapping
     public ResponseEntity<CategoryResponseDto> createCategory(
+            @RequestHeader("Authorization") String authHeader,
             @PathVariable UUID userId,
             @Valid @RequestBody CategoryRequestDto dto) {
+        jwtAuthorizationValidator.validateToken(authHeader, userId);
         return ResponseEntity.ok(categoryService.createCategory(userId, dto));
     }
 
     @Operation(summary = "Get all categories for a user")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping
-    public ResponseEntity<List<CategoryResponseDto>> getCategories(@PathVariable UUID userId) {
+    public ResponseEntity<List<CategoryResponseDto>> getCategories(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable UUID userId
+    ) {
+        jwtAuthorizationValidator.validateToken(authHeader, userId);
         return ResponseEntity.ok(categoryService.getCategoriesByUser(userId));
     }
 
     @Operation(summary = "Get a specific category")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @GetMapping("/{id}")
-    public ResponseEntity<CategoryResponseDto> getCategory(@PathVariable UUID id) {
-        return ResponseEntity.ok(categoryService.getCategoryById(id));
+    @GetMapping("/{categoryId}")
+    public ResponseEntity<CategoryResponseDto> getCategory(
+            @PathVariable UUID userId,
+            @PathVariable UUID categoryId,
+            @RequestHeader("Authorization") String authHeader
+    ) {
+        jwtAuthorizationValidator.validateToken(authHeader, userId);
+        return ResponseEntity.ok(categoryService.getCategoryByUserUuidAndCategoryId(userId, categoryId));
     }
 
     @Operation(summary = "Delete a category")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable UUID id) {
-        categoryService.deleteCategory(id);
+    @DeleteMapping("/{categoryId}")
+    public ResponseEntity<Void> deleteCategory(
+            @PathVariable UUID userId,
+            @PathVariable UUID categoryId,
+            @RequestHeader("Authorization") String authHeader) {
+        jwtAuthorizationValidator.validateToken(authHeader, userId);
+        categoryService.deleteCategory(categoryId);
         return ResponseEntity.noContent().build();
     }
 

@@ -10,5 +10,6 @@ public interface CategoryService {
     CategoryResponseDto createCategory(UUID userId, CategoryRequestDto dto);
     List<CategoryResponseDto> getCategoriesByUser(UUID userId);
     CategoryResponseDto getCategoryById(UUID id);
+    CategoryResponseDto getCategoryByUserUuidAndCategoryId(UUID userUuid, UUID categoryUuid);
     void deleteCategory(UUID id);
 }

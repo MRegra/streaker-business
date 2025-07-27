@@ -1,5 +1,6 @@
 package com.streaker.controller.habit;
 
+import com.streaker.config.JwtAuthorizationValidator;
 import com.streaker.controller.habit.dto.HabitRequestDto;
 import com.streaker.controller.habit.dto.HabitResponseDto;
 import com.streaker.service.HabitService;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,6 +33,8 @@ import java.util.UUID;
 @SecurityRequirement(name = "bearerAuth")
 public class HabitController {
 
+    private final JwtAuthorizationValidator jwtAuthorizationValidator;
+
     private final HabitService habitService;
 
     @Operation(summary = "Create a new habit for a user")
@@ -41,27 +45,40 @@ public class HabitController {
     })
     @PostMapping
     public ResponseEntity<HabitResponseDto> createHabit(
+            @RequestHeader("Authorization") String authHeader,
             @PathVariable UUID userId,
             @Valid @RequestBody HabitRequestDto dto) {
+        jwtAuthorizationValidator.validateToken(authHeader, userId);
         return ResponseEntity.ok(habitService.createHabit(userId, dto));
     }
 
     @Operation(summary = "Get all habits for a user")
     @ApiResponse(responseCode = "200", description = "List of habits")
     @GetMapping
-    public ResponseEntity<List<HabitResponseDto>> getHabitsForUser(@PathVariable UUID userId) {
+    public ResponseEntity<List<HabitResponseDto>> getHabitsForUser(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable UUID userId) {
+        jwtAuthorizationValidator.validateToken(authHeader, userId);
         return ResponseEntity.ok(habitService.getHabitsForUser(userId));
     }
 
     @Operation(summary = "Get a specific habit by ID")
     @GetMapping("/{habitId}")
-    public ResponseEntity<HabitResponseDto> getHabitById(@PathVariable UUID habitId) {
+    public ResponseEntity<HabitResponseDto> getHabitById(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable UUID userId,
+            @PathVariable UUID habitId) {
+        jwtAuthorizationValidator.validateToken(authHeader, userId);
         return ResponseEntity.ok(habitService.getHabitById(habitId));
     }
 
     @Operation(summary = "Delete a habit by ID")
     @DeleteMapping("/{habitId}")
-    public ResponseEntity<Void> deleteHabit(@PathVariable UUID habitId) {
+    public ResponseEntity<Void> deleteHabit(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable UUID userId,
+            @PathVariable UUID habitId) {
+        jwtAuthorizationValidator.validateToken(authHeader, userId);
         habitService.deleteHabit(habitId);
         return ResponseEntity.noContent().build();
     }

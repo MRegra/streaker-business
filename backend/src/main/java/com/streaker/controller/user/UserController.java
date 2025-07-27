@@ -1,5 +1,6 @@
 package com.streaker.controller.user;
 
+import com.streaker.config.JwtAuthorizationValidator;
 import com.streaker.config.JwtService;
 import com.streaker.controller.user.dto.CreateUserDto;
 import com.streaker.controller.user.dto.LoginUserDto;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -34,6 +36,8 @@ import java.util.UUID;
 @SecurityRequirement(name = "bearerAuth")
 public class UserController {
 
+    private final JwtAuthorizationValidator jwtAuthorizationValidator;
+
     private final AuthenticationManager authenticationManager;
 
     private final JwtService jwtService;
@@ -42,13 +46,17 @@ public class UserController {
 
     @Operation(summary = "Get all users")
     @GetMapping
-    public ResponseEntity<List<UserResponseDto>> getAllUsers() {
+    public ResponseEntity<List<UserResponseDto>> getAllUsers(@RequestHeader("Authorization") String authHeader) {
+        jwtAuthorizationValidator.validateToken(authHeader);
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
     @Operation(summary = "Get a user by ID")
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDto> getUserById(@PathVariable UUID id) {
+    public ResponseEntity<UserResponseDto> getUserById(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable UUID id) {
+        jwtAuthorizationValidator.validateToken(authHeader, id);
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
@@ -70,7 +78,8 @@ public class UserController {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String token = jwtService.generateToken(userDetails);
+        UserResponseDto user = userService.getUserByUsername(loginRequest.username());
+        String token = jwtService.generateToken(userDetails, user);
 
         return ResponseEntity.ok(new LoginUserTokenDto(token));
     }

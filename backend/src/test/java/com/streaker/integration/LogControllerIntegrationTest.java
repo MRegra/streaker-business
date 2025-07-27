@@ -8,10 +8,12 @@ import com.streaker.model.Habit;
 import com.streaker.model.Log;
 import com.streaker.model.Streak;
 import com.streaker.model.User;
+import com.streaker.repository.CategoryRepository;
 import com.streaker.repository.HabitRepository;
 import com.streaker.repository.LogRepository;
+import com.streaker.repository.StreakRepository;
 import com.streaker.repository.UserRepository;
-import com.streaker.utlis.enums.Frequency;
+import com.streaker.utils.TestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,12 +28,11 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -41,16 +42,17 @@ class LogControllerIntegrationTest extends PostgresTestContainerConfig {
 
     @Autowired
     private MockMvc mockMvc;
-
     @Autowired
     private ObjectMapper objectMapper;
 
     @Autowired
     private UserRepository userRepository;
-
+    @Autowired
+    private CategoryRepository categoryRepository;
+    @Autowired
+    private StreakRepository streakRepository;
     @Autowired
     private HabitRepository habitRepository;
-
     @Autowired
     private LogRepository logRepository;
 
@@ -60,33 +62,20 @@ class LogControllerIntegrationTest extends PostgresTestContainerConfig {
     void setup() {
         cleanDatabase();
 
-        User user = new User();
-        user.setUsername("testuser-log");
-        user.setEmail("testuser-log@example.com");
-        user.setPassword("password123");
+        // Setup User
+        User user = TestDataFactory.createUser("testuser-log", "testuser-log@email.com", "password1234");
         user = userRepository.save(user);
 
-        Category category = new Category();
-        category.setName("Wellness");
-        category.setUser(user);
-        category.setColor("#FFFFFF");
+        // Setup Category
+        Category category = TestDataFactory.createCategory(user);
         category = categoryRepository.save(category);
 
-        Streak streak = new Streak();
-        streak.setName("reading-streak");
-        streak.setIsActive(true);
-        streak.setCurrentCount(0);
-        streak.setStartDate(LocalDate.now());
-        streak.setUser(user);
+        // Setup Streak
+        Streak streak = TestDataFactory.createStreak(user);
         streak = streakRepository.save(streak);
 
-        Habit habit = new Habit();
-        habit.setName("Read");
-        habit.setUser(user);
-        habit.setStreak(streak);
-        habit.setFrequency(Frequency.DAILY);
-        habit.setDescription("Reading at least 10 pages");
-        habit.setCategory(category);
+        // Setup Habit
+        Habit habit = TestDataFactory.createHabit(user, streak, category);
         habit = habitRepository.save(habit);
 
         habitId = habit.getUuid();
@@ -110,10 +99,8 @@ class LogControllerIntegrationTest extends PostgresTestContainerConfig {
 
     @Test
     void getLogs_shouldReturnLogsForHabit() throws Exception {
-        Log log = new Log();
-        log.setDate(LocalDate.now());
-        log.setCompleted(true);
-        log.setHabit(habitRepository.findById(habitId).orElseThrow());
+        Habit habit = habitRepository.findById(habitId).orElseThrow();
+        Log log = TestDataFactory.createLog(habit, true);
         logRepository.save(log);
 
         mockMvc.perform(get("/v1/users/habits/{habitId}/logs", habitId))
@@ -124,10 +111,8 @@ class LogControllerIntegrationTest extends PostgresTestContainerConfig {
 
     @Test
     void getLogById_shouldReturnSingleLog() throws Exception {
-        Log log = new Log();
-        log.setDate(LocalDate.now());
-        log.setCompleted(false);
-        log.setHabit(habitRepository.findById(habitId).orElseThrow());
+        Habit habit = habitRepository.findById(habitId).orElseThrow();
+        Log log = TestDataFactory.createLog(habit, false);
         log = logRepository.save(log);
 
         mockMvc.perform(get("/v1/users/habits/{habitId}/logs/{logId}", habitId, log.getUuid()))
@@ -138,10 +123,8 @@ class LogControllerIntegrationTest extends PostgresTestContainerConfig {
 
     @Test
     void markLogCompleted_shouldSetCompletedToTrue() throws Exception {
-        Log log = new Log();
-        log.setDate(LocalDate.now());
-        log.setCompleted(false);
-        log.setHabit(habitRepository.findById(habitId).orElseThrow());
+        Habit habit = habitRepository.findById(habitId).orElseThrow();
+        Log log = TestDataFactory.createLog(habit, false);
         log = logRepository.save(log);
 
         mockMvc.perform(post("/v1/users/habits/{habitId}/logs/{logId}/complete", habitId, log.getUuid()))

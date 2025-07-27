@@ -7,6 +7,7 @@ import com.streaker.model.Category;
 import com.streaker.model.User;
 import com.streaker.repository.CategoryRepository;
 import com.streaker.repository.UserRepository;
+import com.streaker.utils.TestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
@@ -15,13 +16,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ActiveProfiles("test")
 public class CategoryServiceImplTest {
@@ -41,17 +42,11 @@ public class CategoryServiceImplTest {
         userRepository = mock(UserRepository.class);
         service = new CategoryServiceImpl(categoryRepository, userRepository);
 
-        userId = UUID.randomUUID();
-        categoryId = UUID.randomUUID();
+        user = TestDataFactory.createUser("jane", "jane@example.com", "password");
+        category = TestDataFactory.createCategory(user, "Work", "#000000");
 
-        user = new User();
-        user.setUuid(userId);
-
-        category = new Category();
-        category.setUuid(categoryId);
-        category.setName("Work");
-        category.setColor("#000000");
-        category.setUser(user);
+        userId = user.getUuid();
+        categoryId = category.getUuid();
     }
 
     @Test
@@ -99,16 +94,19 @@ public class CategoryServiceImplTest {
 
         CategoryRequestDto dto = new CategoryRequestDto("Work", "#000000");
 
-        String message = assertThrows(ResourceNotFoundException.class, () -> service.createCategory(userId, dto)).getMessage();
-        assertEquals("User not found", message, "User does not exist in the system");
+        ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () ->
+                service.createCategory(userId, dto));
+
+        assertEquals("User not found", ex.getMessage());
     }
 
     @Test
     void testGetCategoryById_NotFound_ThrowsException() {
         when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
 
-        String message = assertThrows(ResourceNotFoundException.class, () -> service.getCategoryById(categoryId)).getMessage();
-        assertEquals("Category not found", message, "Category does not exist in the system");
+        ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () ->
+                service.getCategoryById(categoryId));
 
+        assertEquals("Category not found", ex.getMessage());
     }
 }

@@ -1,5 +1,6 @@
 package com.streaker.config;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -88,9 +89,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
             filterChain.doFilter(request, response);
 
-        } catch (Exception ex) {
+        } catch (JwtException ex) {
             log.error("Exception in JwtAuthFilter during [{}] {} from IP {}: {}", method, path, remoteIp, ex.getMessage(), ex);
-            throw ex; // Important so it bubbles to GlobalExceptionHandler or Spring's logging
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\": \"Unauthorized: Invalid JWT\"}");
         }
     }
 
