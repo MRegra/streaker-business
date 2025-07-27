@@ -12,7 +12,7 @@ import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.UUID;
 
 @Slf4j
 @Component
@@ -25,17 +25,24 @@ public class RequestLoggingFilter implements Filter {
         HttpServletRequest req = (HttpServletRequest) request;
         StatusCaptureWrapper resWrapper = new StatusCaptureWrapper((HttpServletResponse) response);
 
-        MDC.put("method", req.getMethod());
-        MDC.put("uri", req.getRequestURI());
-        MDC.put("remote_ip", req.getRemoteAddr());
+        String path = req.getRequestURI();
+        String method = req.getMethod();
+        String ip = req.getRemoteAddr();
+
+        MDC.put("requestId", UUID.randomUUID().toString());
+        MDC.put("path", path);
+        MDC.put("method", method);
+        MDC.put("ip", ip);
+
+        long start = System.currentTimeMillis();
 
         try {
-            chain.doFilter(request, response);
+            chain.doFilter(request, resWrapper);
         } finally {
-            log.info("Incoming request: {} {} from {}", req.getMethod(), req.getRequestURI(), req.getRemoteAddr());
-            Collections.list(req.getHeaderNames()).forEach(name ->
-                    log.debug("Header: {}={}", name, req.getHeader(name))
-            );
+            long duration = System.currentTimeMillis() - start;
+            int status = resWrapper.getStatusCode();
+
+            log.info("{} {} from {} -> {} ({} ms)", method, path, ip, status, duration);
             MDC.clear();
         }
     }

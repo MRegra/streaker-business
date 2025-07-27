@@ -1,29 +1,14 @@
-<configuration>
+<configuration scan="true" scanPeriod="30 seconds">
 
-    <!-- Console JSON Logger -->
-    <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
-            <providers>
-                <timestamp>
-                    <fieldName>timestamp</fieldName>
-                </timestamp>
-                <pattern>
-                    <pattern>
-                        {
-                        "level": "%level",
-                        "thread": "%thread",
-                        "logger": "%logger",
-                        "message": "%message",
-                        "context": "%mdc"
-                        }
-                    </pattern>
-                </pattern>
-            </providers>
+    <!-- DEV: Pretty colored logs -->
+    <appender name="CONSOLE_PRETTY" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %highlight(%-5level) [%thread] %cyan(%logger{36}) - %msg%n%ex</pattern>
         </encoder>
     </appender>
 
-    <!-- File JSON Logger (for Splunk Forwarder) -->
-    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+    <!-- PROD: JSON log for Splunk -->
+    <appender name="FILE_JSON" class="ch.qos.logback.core.FileAppender">
         <file>/app/logs/streaker.log</file>
         <append>true</append>
         <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
@@ -31,24 +16,26 @@
                 <timestamp>
                     <fieldName>timestamp</fieldName>
                 </timestamp>
-                <pattern>
-                    <pattern>
-                        {
-                        "level": "%level",
-                        "thread": "%thread",
-                        "logger": "%logger",
-                        "message": "%message",
-                        "context": "%mdc"
-                        }
-                    </pattern>
-                </pattern>
+                <logLevel>
+                    <fieldName>level</fieldName>
+                </logLevel>
+                <threadName>
+                    <fieldName>thread</fieldName>
+                </threadName>
+                <loggerName>
+                    <fieldName>logger</fieldName>
+                </loggerName>
+                <message />
+                <mdc />
+                <stackTrace>
+                    <fieldName>exception</fieldName>
+                </stackTrace>
             </providers>
         </encoder>
     </appender>
 
-    <root level="INFO">
-        <appender-ref ref="JSON_CONSOLE"/>
-        <appender-ref ref="FILE"/>
+    <root level="DEBUG">
+        <appender-ref ref="CONSOLE_PRETTY" />
+        <appender-ref ref="FILE_JSON" />
     </root>
-
 </configuration>

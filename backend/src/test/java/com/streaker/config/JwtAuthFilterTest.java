@@ -67,6 +67,7 @@ public class JwtAuthFilterTest {
     @Test
     void shouldSkipAuth_whenTokenIsInvalid() throws ServletException, IOException {
         when(request.getHeader("Authorization")).thenReturn(null);
+        when(request.getRequestURI()).thenReturn("/api/v1/users/login");
 
         jwtAuthFilter.doFilterInternal(request, response, filterChain);
 

@@ -15,22 +15,28 @@ public class StatusCaptureWrapper extends HttpServletResponseWrapper {
     @Override
     public void setStatus(int sc) {
         super.setStatus(sc);
-        httpStatus = sc;
+        this.httpStatus = sc;
     }
 
     @Override
     public void sendError(int sc) throws IOException {
         super.sendError(sc);
-        httpStatus = sc;
+        this.httpStatus = sc;
     }
 
     @Override
     public void sendError(int sc, String msg) throws IOException {
         super.sendError(sc, msg);
-        httpStatus = sc;
+        this.httpStatus = sc;
+    }
+
+    @Override
+    public void sendRedirect(String location) throws IOException {
+        super.sendRedirect(location);
+        this.httpStatus = SC_FOUND;
     }
 
     public int getStatusCode() {
-        return httpStatus;
+        return this.httpStatus;
     }
 }

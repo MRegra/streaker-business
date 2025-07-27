@@ -51,11 +51,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex, HttpServletRequest request) {
-        log.error("Unhandled exception occurred at {} {} from {}: {}",
+        log.error("Unhandled exception occurred at {} {} from {}",
                 request.getMethod(),
                 request.getRequestURI(),
                 request.getRemoteAddr(),
-                ex.getMessage(),
                 ex);
         return new ResponseEntity<>(new ErrorResponse(
                 Instant.now(),
