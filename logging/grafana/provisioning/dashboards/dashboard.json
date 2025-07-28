@@ -1,0 +1,27 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Streaker Logs",
+    "panels": [
+      {
+        "type": "logs",
+        "title": "Backend Logs",
+        "targets": [
+          {
+            "expr": "{job=\"streaker-backend\"}"
+          }
+        ],
+        "gridPos": {
+          "h": 10,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        }
+      }
+    ],
+    "timezone": "browser",
+    "schemaVersion": 27,
+    "version": 1
+  },
+  "overwrite": true
+}

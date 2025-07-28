@@ -37,10 +37,13 @@ class CategoryControllerIntegrationTest extends PostgresTestContainerConfig {
     private static final String PASSWORD = "strongpass";
     @Autowired
     private MockMvc mockMvc;
+
     @Autowired
     private ObjectMapper objectMapper;
+
     @Autowired
     private CategoryRepository categoryRepository;
+
     @Autowired
     private UserRepository userRepository;
 

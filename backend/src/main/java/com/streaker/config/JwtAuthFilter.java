@@ -90,8 +90,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
 
         } catch (JwtException ex) {
-            log.error("Exception in JwtAuthFilter during [{}] {} from IP {}: {}", method, path, remoteIp, ex.getMessage(), ex);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            log.error("JWT error during [{}] {} from IP {}: {}", method, path, remoteIp, ex.getMessage(), ex);
             response.setContentType("application/json");
             response.getWriter().write("{\"error\": \"Unauthorized: Invalid JWT\"}");
         }

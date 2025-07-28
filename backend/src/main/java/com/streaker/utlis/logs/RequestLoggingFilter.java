@@ -9,6 +9,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -16,6 +18,7 @@ import java.util.UUID;
 
 @Slf4j
 @Component
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class RequestLoggingFilter implements Filter {
 
     @Override
@@ -28,8 +31,9 @@ public class RequestLoggingFilter implements Filter {
         String path = req.getRequestURI();
         String method = req.getMethod();
         String ip = req.getRemoteAddr();
+        String requestId = UUID.randomUUID().toString();
 
-        MDC.put("requestId", UUID.randomUUID().toString());
+        MDC.put("requestId", requestId);
         MDC.put("path", path);
         MDC.put("method", method);
         MDC.put("ip", ip);
@@ -37,12 +41,17 @@ public class RequestLoggingFilter implements Filter {
         long start = System.currentTimeMillis();
 
         try {
-            chain.doFilter(request, resWrapper);
+            chain.doFilter(req, resWrapper);
         } finally {
             long duration = System.currentTimeMillis() - start;
             int status = resWrapper.getStatusCode();
 
-            log.info("{} {} from {} -> {} ({} ms)", method, path, ip, status, duration);
+            MDC.put("status", String.valueOf(status));
+
+            // Standard log format
+            log.info("Request [{}] {} {} from {} -> {} ({} ms)",
+                    requestId, method, path, ip, status, duration);
+
             MDC.clear();
         }
     }

@@ -50,43 +50,36 @@ services:
       start_period: 15s
     networks:
       - streaker-net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
-  fluent-bit:
-    image: fluent/fluent-bit:latest
-    container_name: streaker-fluent-bit
-    volumes:
-      - ./logging/fluent-bit/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
-      - ./logging/fluent-bit/parsers.conf:/fluent-bit/etc/parsers.conf
-      - shared-logs:/app/logs
-    depends_on:
-      - loki
-    networks:
-      - streaker-net
-
-  loki:
-    image: grafana/loki:2.9.2
-    container_name: streaker-loki
+  splunk:
+    image: splunk/splunk:latest
+    container_name: splunk
     ports:
-      - "3100:3100"
-    command: -config.file=/etc/loki/config.yaml
+      - "8000:8000"   # Web UI
+      - "8088:8088"   # HEC
+    environment:
+      SPLUNK_START_ARGS: "--accept-license"
+      SPLUNK_PASSWORD: changeme123
     volumes:
-      - ./logging/loki/config.yaml:/etc/loki/config.yaml
+      - splunk-data:/opt/splunk/var
+      - shared-logs:/logs   # Shared with backend
     networks:
       - streaker-net
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: streaker-grafana
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./logging/grafana/provisioning:/etc/grafana/provisioning
-    networks:
-      - streaker-net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   pgdata:
   shared-logs:
+  splunk-data:
 
 networks:
   streaker-net:
