@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -17,13 +18,16 @@ class SecurityConfigTest {
     private JwtAuthFilter jwtAuthFilter;
 
     @Mock
+    private Environment environment;
+
+    @Mock
     private CustomUserDetailsService userDetailsService;
 
     private SecurityConfig securityConfig;
 
     @BeforeEach
     void setUp() {
-        securityConfig = new SecurityConfig(jwtAuthFilter, userDetailsService);
+        securityConfig = new SecurityConfig(environment, jwtAuthFilter, userDetailsService);
     }
 
     @Test

@@ -35,6 +35,7 @@ class CategoryControllerIntegrationTest extends PostgresTestContainerConfig {
     private static final String CATEGORY_USER_TEST = "category-user-test";
     private static final String EMAIL = "category@example.com";
     private static final String PASSWORD = "strongpass";
+
     @Autowired
     private MockMvc mockMvc;
 

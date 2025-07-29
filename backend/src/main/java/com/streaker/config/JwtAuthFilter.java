@@ -7,7 +7,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,8 +23,7 @@ import java.util.Set;
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    @Value("${environment:}")
-    private String environment;
+    private final Environment environment;
 
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
@@ -34,7 +34,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             "/api/v1/users/register"
     );
 
-    public JwtAuthFilter(JwtService jwtService, CustomUserDetailsService userDetailsService) {
+    public JwtAuthFilter(Environment environment, JwtService jwtService, CustomUserDetailsService userDetailsService) {
+        this.environment = environment;
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
     }
@@ -98,6 +99,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     private boolean isDev() {
-        return environment.equalsIgnoreCase("DEV");
+        return environment.acceptsProfiles(Profiles.of("dev", "test"));
     }
 }

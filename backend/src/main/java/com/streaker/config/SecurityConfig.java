@@ -1,9 +1,10 @@
 package com.streaker.config;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -18,18 +19,18 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-@EnableMethodSecurity // Enables @PreAuthorize, etc.
+@EnableMethodSecurity
 public class SecurityConfig {
 
-    @Value("${environment:}")
-    private String environment;
+    private final Environment environment;
 
     private final JwtAuthFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
 
     // JwtAuthFilter is assumed to be externally managed and thread-safe.
     @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "JwtAuthFilter is a Spring-managed singleton bean and is not mutated.")
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter, UserDetailsService userDetailsService) {
+    public SecurityConfig(Environment environment, JwtAuthFilter jwtAuthFilter, UserDetailsService userDetailsService) {
+        this.environment = environment;
         this.jwtAuthFilter = jwtAuthFilter;
         this.userDetailsService = userDetailsService;
     }
@@ -66,6 +67,6 @@ public class SecurityConfig {
     }
 
     private boolean isDev() {
-        return environment.equalsIgnoreCase("DEV");
+        return environment.acceptsProfiles(Profiles.of("dev", "test"));
     }
 }
