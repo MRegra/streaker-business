@@ -14,16 +14,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Create empty VERSION file if not exists
-        run: |
-          test -f VERSION || echo "0.0.0" > VERSION
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
-      - name: Run semantic-release with Docker
+      - name: Install semantic-release
+        run: npm install --no-save semantic-release @semantic-release/git @semantic-release/commit-analyzer @semantic-release/release-notes-generator
+
+      - name: Ensure VERSION file exists
+        run: |
+          test -f VERSION || echo "0.1.0" > VERSION
+
+      - name: Run semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          docker run --rm \
-            -e GITHUB_TOKEN=$GITHUB_TOKEN \
-            -v $PWD:/workspace \
-            -w /workspace \
-            ghcr.io/codfish/semantic-release:latest
+        run: npx semantic-release
