@@ -20,7 +20,10 @@ jobs:
           node-version: 20
 
       - name: Install semantic-release
-        run: npm install --no-save semantic-release @semantic-release/git @semantic-release/commit-analyzer @semantic-release/release-notes-generator
+        run: npm install --no-save semantic-release @semantic-release/git @semantic-release/commit-analyzer @semantic-release/release-notes-generator @semantic-release/exec
+
+      - name: Make bump-version script executable
+        run: chmod +x .bump-version.sh
 
       - name: Ensure VERSION file exists
         run: |
