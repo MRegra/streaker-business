@@ -1,5 +1,8 @@
 # 🧠 Streaker Backend
 
+[![Coverage](https://codecov.io/gh/MRegra/streaker-business/branch/main/graph/badge.svg)](https://codecov.io/gh/MRegra/streaker-business)
+
+
 Streaker is a habit-tracking backend designed for real-world use. Built with Java 21 and Spring Boot 3, it supports JWT authentication, Docker-based deployments, and structured logging — making it suitable for production-grade environments and DevOps experimentation.
 
 ---

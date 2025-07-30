@@ -47,6 +47,19 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Build and Test with Maven
+      - name: Build, Lint & Test
         working-directory: ./backend
         run: mvn clean verify
+
+      - name: Generate JaCoCo Report
+        working-directory: ./backend
+        run: mvn jacoco:report
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ./backend/target/site/jacoco
+          flags: backend
+          name: codecov-backend-report
+          fail_ci_if_error: true
