@@ -1,0 +1,29 @@
+name: Bump Version on Merge
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  semantic-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required to push tags
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create empty VERSION file if not exists
+        run: |
+          test -f VERSION || echo "0.0.0" > VERSION
+
+      - name: Run semantic-release with Docker
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          docker run --rm \
+            -e GITHUB_TOKEN=$GITHUB_TOKEN \
+            -v $PWD:/workspace \
+            -w /workspace \
+            ghcr.io/codfish/semantic-release:latest

@@ -1,6 +1,6 @@
 # 🧠 Streaker Backend
 
-[![Coverage](https://codecov.io/gh/MRegra/streaker-business/branch/main/graph/badge.svg)](https://codecov.io/gh/MRegra/streaker-business)![Build](https://github.com/MRegra/streaker-business/actions/workflows/ci.yml/badge.svg)
+[![Coverage](https://codecov.io/gh/MRegra/streaker-business/branch/main/graph/badge.svg)](https://codecov.io/gh/MRegra/streaker-business)![Build](https://github.com/MRegra/streaker-business/actions/workflows/ci.yml/badge.svg)![GitHub release (latest by date)](https://img.shields.io/github/v/release/MRegra/streaker-business)
 
 
 
@@ -226,6 +226,14 @@ Use it, fork it, break it, learn from it — that's the goal.
 ---
 
 MIT © [MRegra](https://github.com/MRegra)
+
+### Rules for commit messages:
+
+    feat: -> minor bump
+    fix: -> patch bump
+    BREAKING CHANGE: -> major bump
+
+### Commands
 
 Full docker clean-up:
 
