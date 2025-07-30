@@ -6,7 +6,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
 @ActiveProfiles("test")
-class StreakerApplicationTests {
+class StreakerApplicationTests extends PostgresTestContainerConfig{
 
 	@Test
 	void contextLoads() {

@@ -43,14 +43,15 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers(HttpMethod.POST, "/api/v1/users/login", "/api/v1/users/register",
-                            "/v1/users/login", "/v1/users/register").permitAll();
+                    auth.requestMatchers(HttpMethod.POST, "/api/v1/users/login", "/api/v1/users/register").permitAll();
                     auth.requestMatchers("/api/actuator/health", "/actuator/health").permitAll();
-                    auth.requestMatchers("/api/v1/users/**", "/v1/users/**").authenticated();
+                    auth.requestMatchers("/api/v1/users/**").authenticated();
 
                     if (isDev()) {
                         auth.anyRequest().permitAll();
                     } else {
+                        auth.requestMatchers(HttpMethod.POST, "/v1/users/login", "/v1/users/register").permitAll();
+                        auth.requestMatchers("/v1/users/**").authenticated();
                         auth.anyRequest().denyAll();
                     }
                 })
