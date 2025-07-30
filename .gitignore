@@ -6,3 +6,4 @@
 /frontend/.vscode
 
 .env
+prod.env

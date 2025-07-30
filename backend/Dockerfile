@@ -1,12 +1,26 @@
-# backend/Dockerfile
-# This makes Docker build the JAR inside the container. Slower but 100% self-contained.
-FROM eclipse-temurin:21-jdk AS builder
+# ----------- Build Stage ----------- #
+FROM eclipse-temurin:21-jdk-jammy AS builder
 WORKDIR /build
-COPY . .
-RUN ./mvnw clean package -DskipTests
 
-FROM eclipse-temurin:21-jdk
+# Cache dependencies early
+COPY .mvn .mvn
+COPY mvnw pom.xml ./
+RUN ./mvnw dependency:go-offline
+
+COPY . .
+RUN ./mvnw clean package -DskipTests && cp target/*.jar target/app.jar
+
+# ----------- Runtime Stage ----------- #
+FROM eclipse-temurin:21-jdk-jammy
 WORKDIR /app
-COPY --from=builder /build/target/*.jar app.jar
+
+COPY --from=builder /build/target/app.jar app.jar
+
+# Expose app port
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# Set JVM options
+ENV JAVA_OPTS="-Xms256m -Xmx512m"
+
+# Use shell form for entrypoint (allows variable expansion)
+CMD java $JAVA_OPTS -jar app.jar

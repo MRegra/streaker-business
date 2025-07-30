@@ -98,6 +98,7 @@ public class GlobalExceptionHandler {
                 ex.getMessage(),
                 ex);
 
+
         ErrorResponse error = new ErrorResponse(
                 Instant.now(),
                 HttpStatus.FORBIDDEN.value(),

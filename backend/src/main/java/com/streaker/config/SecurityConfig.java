@@ -1,6 +1,8 @@
 package com.streaker.config;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -18,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+@Slf4j
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
@@ -40,9 +43,10 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers(HttpMethod.POST, "/api/v1/users/login", "/api/v1/users/register").permitAll();
-                    auth.requestMatchers("/api/actuator/health").permitAll();
-                    auth.requestMatchers("/api/v1/users/**").authenticated();
+                    auth.requestMatchers(HttpMethod.POST, "/api/v1/users/login", "/api/v1/users/register",
+                            "/v1/users/login", "/v1/users/register").permitAll();
+                    auth.requestMatchers("/api/actuator/health", "/actuator/health").permitAll();
+                    auth.requestMatchers("/api/v1/users/**", "/v1/users/**").authenticated();
 
                     if (isDev()) {
                         auth.anyRequest().permitAll();
@@ -50,6 +54,16 @@ public class SecurityConfig {
                         auth.anyRequest().denyAll();
                     }
                 })
+                .exceptionHandling(exception -> exception
+                        .accessDeniedHandler((request, response, ex) -> {
+                            log.warn("ACCESS DENIED: [{} {}] from {}",
+                                    request.getMethod(),
+                                    request.getRequestURI(),
+                                    request.getRemoteAddr()
+                            );
+                            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden");
+                        })
+                )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

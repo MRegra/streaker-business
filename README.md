@@ -227,3 +227,6 @@ Full docker clean-up:
 
     docker compose down -v --remove-orphans && docker system prune -af --volumes && docker compose build --no-cache && docker compose up
     docker compose down -v --remove-orphans; docker system prune -af --volumes; docker compose build --no-cache; docker compose up
+    docker compose down -v --remove-orphans; docker system prune -af --volumes; docker compose build --no-cache; docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+    
+
