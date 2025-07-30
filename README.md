@@ -1,6 +1,6 @@
 # 🧠 Streaker Backend
 
-[![Coverage](https://codecov.io/gh/MRegra/streaker-business/branch/main/graph/badge.svg)](https://codecov.io/gh/MRegra/streaker-business) | ![Build](https://github.com/MRegra/streaker-business/actions/workflows/ci.yml/badge.svg) | ![GitHub release (latest by date)](https://img.shields.io/github/v/release/MRegra/streaker-business)
+[![Coverage](https://codecov.io/gh/MRegra/streaker-business/branch/main/graph/badge.svg)](https://codecov.io/gh/MRegra/streaker-business)  ![Build](https://github.com/MRegra/streaker-business/actions/workflows/ci.yml/badge.svg)  ![GitHub release (latest by date)](https://img.shields.io/github/v/release/MRegra/streaker-business)
 
 
 
