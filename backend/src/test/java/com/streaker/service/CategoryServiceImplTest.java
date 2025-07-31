@@ -9,6 +9,8 @@ import com.streaker.repository.CategoryRepository;
 import com.streaker.repository.UserRepository;
 import com.streaker.utils.TestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -16,16 +18,19 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("test")
-public class CategoryServiceImplTest {
+@DisplayName("CategoryServiceImpl Tests")
+class CategoryServiceImplTest {
 
     private CategoryServiceImpl service;
     private CategoryRepository categoryRepository;
@@ -49,64 +54,103 @@ public class CategoryServiceImplTest {
         categoryId = category.getUuid();
     }
 
-    @Test
-    void testCreateCategory() {
-        CategoryRequestDto dto = new CategoryRequestDto("Work", "#000000");
+    @Nested
+    @DisplayName("createCategory()")
+    class CreateCategory {
 
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(categoryRepository.save(any(Category.class))).thenReturn(category);
+        @Test
+        @DisplayName("should create category for valid user")
+        void shouldCreateCategory() {
+            CategoryRequestDto dto = new CategoryRequestDto("Work", "#000000");
 
-        CategoryResponseDto result = service.createCategory(userId, dto);
+            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+            when(categoryRepository.save(any(Category.class))).thenReturn(category);
 
-        assertNotNull(result);
-        assertEquals("Work", result.name());
-        assertEquals("#000000", result.color());
+            CategoryResponseDto result = service.createCategory(userId, dto);
+
+            assertAll(
+                    () -> assertNotNull(result),
+                    () -> assertEquals("Work", result.name()),
+                    () -> assertEquals("#000000", result.color())
+            );
+        }
+
+        @Test
+        @DisplayName("should throw ResourceNotFoundException when user does not exist")
+        void shouldThrowWhenUserNotFound() {
+            when(userRepository.findById(userId)).thenReturn(Optional.empty());
+            CategoryRequestDto dto = new CategoryRequestDto("Work", "#000000");
+
+            ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class,
+                    () -> service.createCategory(userId, dto));
+
+            assertEquals("User not found", ex.getMessage());
+        }
     }
 
-    @Test
-    void testGetCategoriesByUser() {
-        when(categoryRepository.findByUserUuid(userId)).thenReturn(List.of(category));
+    @Nested
+    @DisplayName("getCategoriesByUser()")
+    class GetCategoriesByUser {
 
-        List<CategoryResponseDto> result = service.getCategoriesByUser(userId);
+        @Test
+        @DisplayName("should return list of categories for user")
+        void shouldReturnCategories() {
+            when(categoryRepository.findByUserUuid(userId)).thenReturn(List.of(category));
 
-        assertEquals(1, result.size());
-        assertEquals("Work", result.getFirst().name());
+            List<CategoryResponseDto> result = service.getCategoriesByUser(userId);
+
+            assertAll(
+                    () -> assertEquals(1, result.size()),
+                    () -> assertEquals("Work", result.getFirst().name())
+            );
+        }
+
+        @Test
+        @DisplayName("should return empty list when user has no categories")
+        void shouldReturnEmptyList() {
+            when(categoryRepository.findByUserUuid(userId)).thenReturn(List.of());
+
+            List<CategoryResponseDto> result = service.getCategoriesByUser(userId);
+
+            assertTrue(result.isEmpty());
+        }
     }
 
-    @Test
-    void testGetCategoryById() {
-        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
+    @Nested
+    @DisplayName("getCategoryById()")
+    class GetCategoryById {
 
-        CategoryResponseDto result = service.getCategoryById(categoryId);
+        @Test
+        @DisplayName("should return category by id")
+        void shouldReturnCategory() {
+            when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
 
-        assertEquals("Work", result.name());
+            CategoryResponseDto result = service.getCategoryById(categoryId);
+
+            assertEquals("Work", result.name());
+        }
+
+        @Test
+        @DisplayName("should throw ResourceNotFoundException when category not found")
+        void shouldThrowIfNotFound() {
+            when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
+
+            ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class,
+                    () -> service.getCategoryById(categoryId));
+
+            assertEquals("Category not found", ex.getMessage());
+        }
     }
 
-    @Test
-    void testDeleteCategory() {
-        service.deleteCategory(categoryId);
-        verify(categoryRepository).deleteById(categoryId);
-    }
+    @Nested
+    @DisplayName("deleteCategory()")
+    class DeleteCategory {
 
-    @Test
-    void testCreateCategory_UserNotFound_ThrowsException() {
-        when(userRepository.findById(userId)).thenReturn(Optional.empty());
-
-        CategoryRequestDto dto = new CategoryRequestDto("Work", "#000000");
-
-        ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () ->
-                service.createCategory(userId, dto));
-
-        assertEquals("User not found", ex.getMessage());
-    }
-
-    @Test
-    void testGetCategoryById_NotFound_ThrowsException() {
-        when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
-
-        ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () ->
-                service.getCategoryById(categoryId));
-
-        assertEquals("Category not found", ex.getMessage());
+        @Test
+        @DisplayName("should delete category by id")
+        void shouldDeleteCategory() {
+            service.deleteCategory(categoryId);
+            verify(categoryRepository).deleteById(categoryId);
+        }
     }
 }

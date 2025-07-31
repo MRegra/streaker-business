@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -18,123 +19,73 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException ex, HttpServletRequest request) {
-        log.error("Not Found exception at {} {} from {}: {}",
-                request.getMethod(),
-                request.getRequestURI(),
-                request.getRemoteAddr(),
-                ex.getMessage(),
-                ex);
-        return new ResponseEntity<>(new ErrorResponse(
-                Instant.now(),
-                HttpStatus.NOT_FOUND.value(),
-                "Not Found",
-                ex.getMessage(),
-                request.getRequestURI()
-        ), HttpStatus.NOT_FOUND);
+        return buildErrorResponse(request, HttpStatus.NOT_FOUND, "Not Found", ex);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleBadRequest(IllegalArgumentException ex, HttpServletRequest request) {
-        log.error("Bad Request exception at {} {} from {}: {}",
-                request.getMethod(),
-                request.getRequestURI(),
-                request.getRemoteAddr(),
-                ex.getMessage(),
-                ex);
-        return new ResponseEntity<>(new ErrorResponse(
-                Instant.now(),
-                HttpStatus.BAD_REQUEST.value(),
-                "Bad Request",
-                ex.getMessage(),
-                request.getRequestURI()
-        ), HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGeneric(Exception ex, HttpServletRequest request) {
-        log.error("Unhandled exception occurred at {} {} from {}",
-                request.getMethod(),
-                request.getRequestURI(),
-                request.getRemoteAddr(),
-                ex);
-        return new ResponseEntity<>(new ErrorResponse(
-                Instant.now(),
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Internal Server Error",
-                ex.getMessage(),
-                request.getRequestURI()
-        ), HttpStatus.INTERNAL_SERVER_ERROR);
+        return buildErrorResponse(request, HttpStatus.BAD_REQUEST, "Bad Request", ex);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex, HttpServletRequest request) {
-        log.error("Validation exception occurred at {} {} from {}: {}",
-                request.getMethod(),
-                request.getRequestURI(),
-                request.getRemoteAddr(),
-                ex.getMessage(),
-                ex);
+    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex, HttpServletRequest request) {
         String errorMsg = ex.getBindingResult().getFieldErrors().stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .collect(Collectors.joining("; "));
 
-        ErrorResponse error = new ErrorResponse(
-                Instant.now(),
-                HttpStatus.BAD_REQUEST.value(),
-                "Bad Request",
-                errorMsg,
-                request.getRequestURI()
-        );
-        return ResponseEntity.badRequest().body(error);
+        return buildErrorResponse(request, HttpStatus.BAD_REQUEST, "Validation Failed", errorMsg, ex);
+    }
+
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<ErrorResponse> handleMissingHeader(MissingRequestHeaderException ex, HttpServletRequest request) {
+        return buildErrorResponse(request, HttpStatus.BAD_REQUEST, "Missing Header", ex);
     }
 
     @ExceptionHandler(UnauthorizedAccessException.class)
-    public ResponseEntity<ErrorResponse> handleUnauthorizedAccess(
-            UnauthorizedAccessException ex, HttpServletRequest request) {
-        log.warn("Unauthorized access at {} {} from {}: {}",
-                request.getMethod(),
-                request.getRequestURI(),
-                request.getRemoteAddr(),
-                ex.getMessage(),
-                ex);
+    public ResponseEntity<ErrorResponse> handleForbidden(UnauthorizedAccessException ex, HttpServletRequest request) {
+        return buildErrorResponse(request, HttpStatus.FORBIDDEN, "Forbidden", ex);
+    }
 
+    @ExceptionHandler({JwtException.class, SecurityException.class})
+    public ResponseEntity<ErrorResponse> handleJwtAndSecurity(Exception ex, HttpServletRequest request) {
+        return buildErrorResponse(request, HttpStatus.UNAUTHORIZED, "Unauthorized", ex);
+    }
 
-        ErrorResponse error = new ErrorResponse(
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGeneric(Exception ex, HttpServletRequest request) {
+        return buildErrorResponse(request, HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", ex);
+    }
+
+    private ResponseEntity<ErrorResponse> buildErrorResponse(HttpServletRequest request, HttpStatus status, String error, Exception ex) {
+        logError(request, error, ex);
+        return ResponseEntity.status(status).body(new ErrorResponse(
                 Instant.now(),
-                HttpStatus.FORBIDDEN.value(),
-                "Forbidden",
+                status.value(),
+                error,
                 ex.getMessage(),
                 request.getRequestURI()
+        ));
+    }
+
+    private ResponseEntity<ErrorResponse> buildErrorResponse(HttpServletRequest request, HttpStatus status, String error, String message, Exception ex) {
+        logError(request, error, ex);
+        return ResponseEntity.status(status).body(new ErrorResponse(
+                Instant.now(),
+                status.value(),
+                error,
+                message,
+                request.getRequestURI()
+        ));
+    }
+
+    private void logError(HttpServletRequest request, String label, Exception ex) {
+        log.error("{} at [{} {}] from {}: {}",
+                label,
+                request.getMethod(),
+                request.getRequestURI(),
+                request.getRemoteAddr(),
+                ex.getMessage(),
+                ex
         );
-
-        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
-    }
-
-    @ExceptionHandler(JwtException.class)
-    public ResponseEntity<String> handleJwtException(JwtException ex, HttpServletRequest request) {
-        log.warn("Unauthorized access at {} {} from {}: {}",
-                request.getMethod(),
-                request.getRequestURI(),
-                request.getRemoteAddr(),
-                ex.getMessage(),
-                ex);
-
-        return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body("Invalid or malformed JWT: " + ex.getMessage());
-    }
-
-    @ExceptionHandler(SecurityException.class)
-    public ResponseEntity<String> handleSecurityException(SecurityException ex, HttpServletRequest request) {
-        log.warn("Unauthorized access at {} {} from {}: {}",
-                request.getMethod(),
-                request.getRequestURI(),
-                request.getRemoteAddr(),
-                ex.getMessage(),
-                ex);
-
-        return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body("Unauthorized access: " + ex.getMessage());
     }
 }

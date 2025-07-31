@@ -12,11 +12,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -24,16 +26,17 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class UserServiceImplTest {
+@ActiveProfiles("test")
+class UserServiceImplTest {
 
     @Mock
     private UserRepository userRepository;
 
-    @InjectMocks
-    private UserServiceImpl userService;
-
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @InjectMocks
+    private UserServiceImpl userService;
 
     private UUID userId;
     private User user;
@@ -41,6 +44,7 @@ public class UserServiceImplTest {
     @BeforeEach
     void setUp() {
         userId = UUID.randomUUID();
+
         user = new User();
         user.setUuid(userId);
         user.setUsername("john");
@@ -48,47 +52,62 @@ public class UserServiceImplTest {
     }
 
     @Test
-    void getAllUsers_shouldReturnUserList() {
+    void shouldReturnAllUsers_whenUsersExist() {
         when(userRepository.findAll()).thenReturn(List.of(user));
 
         List<UserResponseDto> result = userService.getAllUsers();
 
-        assertEquals(1, result.size());
-        assertEquals("john", result.getFirst().username());
+        assertAll("All users",
+                () -> assertEquals(1, result.size()),
+                () -> assertEquals("john", result.getFirst().username()),
+                () -> assertEquals(userId, result.getFirst().uuid())
+        );
+
         verify(userRepository).findAll();
     }
 
     @Test
-    void getUserById_shouldReturnUserDto() {
+    void shouldReturnUserById_whenUserExists() {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
         UserResponseDto dto = userService.getUserById(userId);
 
-        assertEquals("john", dto.username());
-        assertEquals(userId, dto.uuid());
+        assertAll("User by ID",
+                () -> assertEquals("john", dto.username()),
+                () -> assertEquals(userId, dto.uuid())
+        );
+
+        verify(userRepository).findById(userId);
     }
 
     @Test
-    void getUserById_shouldThrowWhenNotFound() {
+    void shouldThrowException_whenUserNotFoundById() {
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> userService.getUserById(userId));
+
+        verify(userRepository).findById(userId);
     }
 
     @Test
-    void createUser_shouldSaveAndReturnDto() {
-        CreateUserDto inputDto = new CreateUserDto("john", "john@example.com", "password12345");
+    void shouldCreateUser_andReturnDto() {
+        CreateUserDto input = new CreateUserDto("john", "john@example.com", "password12345");
 
+        when(passwordEncoder.encode(input.password())).thenReturn("encodedPassword");
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
-            User u = invocation.getArgument(0);
-            u.setUuid(userId);
-            return u;
+            User savedUser = invocation.getArgument(0);
+            savedUser.setUuid(userId);
+            return savedUser;
         });
 
-        UserResponseDto result = userService.createUser(inputDto);
+        UserResponseDto result = userService.createUser(input);
 
-        assertEquals("john", result.username());
-        assertEquals(userId, result.uuid());
+        assertAll("Created user",
+                () -> assertEquals("john", result.username()),
+                () -> assertEquals(userId, result.uuid())
+        );
+
+        verify(passwordEncoder).encode("password12345");
         verify(userRepository).save(any(User.class));
     }
 }

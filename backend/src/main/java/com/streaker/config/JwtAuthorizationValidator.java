@@ -46,29 +46,36 @@ public class JwtAuthorizationValidator {
     }
 
     public void validateToken(String token, UUID pathUserId) {
-        SecretKey secretKey;
-        if (jwtSecret != null) {
-            secretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+        UUID tokenUserId = extractUserIdFromToken(token);
+
+        if (!tokenUserId.equals(pathUserId)) {
+            throw new UnauthorizedAccessException("User does not have permission to access this resource.");
         }
-        else {
+    }
+
+    private UUID extractUserIdFromToken(String token) {
+        if (jwtSecret == null) {
             throw new JwtException("Invalid JWT Secret");
         }
+
+        SecretKey secretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+
         try {
             Claims claims = Jwts.parserBuilder()
                     .setSigningKey(secretKey)
                     .build()
-                    .parseClaimsJws(token.replace("Bearer ", ""))
+                    .parseClaimsJws(sanitizeToken(token))
                     .getBody();
 
             String uuidFromToken = claims.get("uuid", String.class);
-            UUID tokenUserId = UUID.fromString(uuidFromToken);
-
-            if (!tokenUserId.equals(pathUserId)) {
-                throw new UnauthorizedAccessException("User does not have permission to access this resource.");
-            }
+            return UUID.fromString(uuidFromToken);
 
         } catch (JwtException | IllegalArgumentException e) {
             throw new UnauthorizedAccessException("Invalid JWT token.");
         }
+    }
+
+    private String sanitizeToken(String token) {
+        return token != null && token.startsWith("Bearer ") ? token.substring(7) : token;
     }
 }

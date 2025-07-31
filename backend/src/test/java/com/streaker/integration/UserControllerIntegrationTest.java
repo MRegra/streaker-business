@@ -2,28 +2,28 @@ package com.streaker.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streaker.PostgresTestContainerConfig;
-import com.streaker.controller.user.dto.CreateUserDto;
-import com.streaker.controller.user.dto.LoginUserDto;
+import com.streaker.controller.auth.dto.AuthTokensResponse;
+import com.streaker.integration.utils.IntegrationTestUtils;
 import com.streaker.model.User;
 import com.streaker.repository.CategoryRepository;
 import com.streaker.repository.HabitRepository;
 import com.streaker.repository.StreakRepository;
 import com.streaker.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 import java.util.UUID;
 
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -32,11 +32,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 public class UserControllerIntegrationTest extends PostgresTestContainerConfig {
 
+    private static final String USERNAME = "john";
+    private static final String EMAIL = "john@example.com";
+    private static final String PASSWORD = "securePassword";
+
     @Autowired
     private MockMvc mockMvc;
     @Autowired
     private ObjectMapper objectMapper;
-
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -46,52 +49,77 @@ public class UserControllerIntegrationTest extends PostgresTestContainerConfig {
     @Autowired
     private StreakRepository streakRepository;
 
-    private String token;
+    private String jwt;
     private UUID userId;
 
     @BeforeEach
     void setup() throws Exception {
         cleanDatabase();
-
-        // Register user
-        CreateUserDto userDto = new CreateUserDto("john", "john@example.com", "securePassword");
-        mockMvc.perform(post("/v1/users/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userDto)))
-                .andExpect(status().isOk());
-
-        // Login
-        LoginUserDto loginDto = new LoginUserDto("john", "securePassword");
-        String json = mockMvc.perform(post("/v1/users/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(loginDto)))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
-
-        token = objectMapper.readTree(json).get("token").asText();
-        userId = userRepository.findByEmail("john@example.com").orElseThrow().getUuid();
+        AuthTokensResponse tokens = IntegrationTestUtils.registerAndLogin(mockMvc, objectMapper, USERNAME, EMAIL, PASSWORD);
+        this.jwt = tokens.accessToken();
+        this.userId = userRepository.findByEmail(EMAIL).orElseThrow().getUuid();
     }
 
     @Test
+    @DisplayName("Should persist user correctly on registration")
     void createUser_shouldPersistAndReturnUser() {
         List<User> users = userRepository.findAll();
         assertThat(users).hasSize(1);
-        assertThat(users.getFirst().getEmail()).isEqualTo("john@example.com");
+        assertThat(users.getFirst().getEmail()).isEqualTo(EMAIL);
     }
 
-    @Test
-    void getUserById_shouldReturnUser() throws Exception {
-        mockMvc.perform(get("/v1/users/{id}", userId)
-                        .header("Authorization", "Bearer " + token))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("john"))
-                .andExpect(jsonPath("$.email").value("john@example.com"));
-    }
+    @Nested
+    @DisplayName("GET /v1/users/{id}")
+    class GetUserById {
 
-    @Test
-    void getUserById_shouldReturn404ForMissing() throws Exception {
-        mockMvc.perform(get("/v1/users/{id}", UUID.randomUUID())
-                        .header("Authorization", "Bearer " + token))
-                .andExpect(status().isForbidden());
+        @Test
+        @DisplayName("Should return user with valid JWT")
+        void shouldReturnUser_withValidJwt() throws Exception {
+            mockMvc.perform(get("/v1/users/{id}", userId)
+                            .header("Authorization", "Bearer " + jwt))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.username").value(USERNAME))
+                    .andExpect(jsonPath("$.email").value(EMAIL));
+        }
+
+        @Test
+        @DisplayName("Should return 403 for valid JWT but wrong user ID")
+        void shouldReturn403_forUnauthorizedUser() throws Exception {
+            UUID randomId = UUID.randomUUID();
+
+            mockMvc.perform(get("/v1/users/{id}", randomId)
+                            .header("Authorization", "Bearer " + jwt))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("Should return 401 for invalid JWT")
+        void shouldReturn401_forInvalidToken() throws Exception {
+            mockMvc.perform(get("/v1/users/{id}", userId)
+                            .header("Authorization", "Bearer invalid.token.here"))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @DisplayName("Should return 400 when JWT is missing")
+        void shouldReturn400_withoutJwt() throws Exception {
+            mockMvc.perform(get("/v1/users/{id}", userId))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("Should return 403 for another registered user")
+        void shouldReturn403_forAnotherRegisteredUser() throws Exception {
+            String intruderEmail = "intruder@example.com";
+            String intruderUsername = "intruder";
+            String intruderPassword = "hackMe123";
+
+            AuthTokensResponse intruderTokens = IntegrationTestUtils.registerAndLogin(
+                    mockMvc, objectMapper, intruderUsername, intruderEmail, intruderPassword);
+
+            mockMvc.perform(get("/v1/users/{id}", userId)
+                            .header("Authorization", "Bearer " + intruderTokens.accessToken()))
+                    .andExpect(status().isForbidden());
+        }
     }
 }

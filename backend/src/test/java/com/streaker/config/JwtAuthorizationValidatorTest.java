@@ -6,6 +6,8 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@DisplayName("JwtAuthorizationValidator Tests")
 class JwtAuthorizationValidatorTest {
 
     @Autowired
@@ -40,57 +43,81 @@ class JwtAuthorizationValidatorTest {
                 .claim("role", role)
                 .claim("uuid", uuid.toString())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60)) // 1 min
+                .setExpiration(new Date(System.currentTimeMillis() + 60_000)) // 1 minute
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    @Test
-    void validateToken_shouldPassForAdmin() {
-        String token = "Bearer " + generateToken(Role.ADMIN.name(), UUID.randomUUID());
-        assertDoesNotThrow(() -> validator.validateToken(token));
+    @Nested
+    @DisplayName("validateToken(String token)")
+    class ValidateTokenRoleOnly {
+
+        @Test
+        @DisplayName("should pass when role is ADMIN")
+        void shouldPassForAdmin() {
+            String token = "Bearer " + generateToken(Role.ADMIN.name(), UUID.randomUUID());
+            assertDoesNotThrow(() -> validator.validateToken(token));
+        }
+
+        @Test
+        @DisplayName("should throw when role is not ADMIN")
+        void shouldThrowForNonAdmin() {
+            String token = "Bearer " + generateToken(Role.USER.name(), UUID.randomUUID());
+
+            UnauthorizedAccessException ex = assertThrows(
+                    UnauthorizedAccessException.class,
+                    () -> validator.validateToken(token)
+            );
+
+            assertEquals("User does not have permission to access this resource.", ex.getMessage());
+        }
+
+        @Test
+        @DisplayName("should throw on malformed JWT token")
+        void shouldThrowForMalformedToken() {
+            String malformed = "Bearer this.is.not.valid.jwt";
+
+            assertThrows(UnauthorizedAccessException.class,
+                    () -> validator.validateToken(malformed));
+        }
+
+        @Test
+        @DisplayName("should throw if jwtSecret is not set")
+        void shouldThrowIfSecretMissing() {
+            JwtAuthorizationValidator brokenValidator = new JwtAuthorizationValidator();
+            ReflectionTestUtils.setField(brokenValidator, "jwtSecret", null);
+
+            assertThrows(JwtException.class, () ->
+                    brokenValidator.validateToken("Bearer whatever"));
+        }
     }
 
-    @Test
-    void validateToken_shouldThrowForNonAdmin() {
-        String token = "Bearer " + generateToken(Role.USER.name(), UUID.randomUUID());
-        UnauthorizedAccessException ex = assertThrows(
-                UnauthorizedAccessException.class,
-                () -> validator.validateToken(token)
-        );
-        assertEquals("User does not have permission to access this resource.", ex.getMessage());
-    }
+    @Nested
+    @DisplayName("validateToken(String token, UUID pathUserId)")
+    class ValidateTokenWithUUID {
 
-    @Test
-    void validateToken_shouldThrowForMalformedToken() {
-        String malformedToken = "Bearer this.is.not.valid.jwt";
-        assertThrows(UnauthorizedAccessException.class, () -> validator.validateToken(malformedToken));
-    }
+        @Test
+        @DisplayName("should pass when UUID matches")
+        void shouldPassIfUUIDMatches() {
+            UUID uuid = UUID.randomUUID();
+            String token = "Bearer " + generateToken(Role.USER.name(), uuid);
 
-    @Test
-    void validateTokenWithUUID_shouldPassIfUUIDMatches() {
-        UUID uuid = UUID.randomUUID();
-        String token = "Bearer " + generateToken(Role.USER.name(), uuid);
-        assertDoesNotThrow(() -> validator.validateToken(token, uuid));
-    }
+            assertDoesNotThrow(() -> validator.validateToken(token, uuid));
+        }
 
-    @Test
-    void validateTokenWithUUID_shouldThrowIfUUIDMismatch() {
-        UUID uuidFromToken = UUID.randomUUID();
-        UUID mismatchedUUID = UUID.randomUUID();
-        String token = "Bearer " + generateToken(Role.USER.name(), uuidFromToken);
+        @Test
+        @DisplayName("should throw when UUID does not match")
+        void shouldThrowIfUUIDMismatch() {
+            UUID uuidFromToken = UUID.randomUUID();
+            UUID pathUuid = UUID.randomUUID();
+            String token = "Bearer " + generateToken(Role.USER.name(), uuidFromToken);
 
-        UnauthorizedAccessException ex = assertThrows(
-                UnauthorizedAccessException.class,
-                () -> validator.validateToken(token, mismatchedUUID)
-        );
-        assertEquals("User does not have permission to access this resource.", ex.getMessage());
-    }
+            UnauthorizedAccessException ex = assertThrows(
+                    UnauthorizedAccessException.class,
+                    () -> validator.validateToken(token, pathUuid)
+            );
 
-    @Test
-    void validateToken_shouldThrowIfNoSecretSet() {
-        JwtAuthorizationValidator brokenValidator = new JwtAuthorizationValidator();
-        ReflectionTestUtils.setField(brokenValidator, "jwtSecret", null);
-        assertThrows(JwtException.class, () -> brokenValidator.validateToken("Bearer dummy"));
+            assertEquals("User does not have permission to access this resource.", ex.getMessage());
+        }
     }
 }
