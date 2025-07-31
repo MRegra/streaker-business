@@ -81,9 +81,10 @@ public class UserController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         UserResponseDto user = userService.getUserByUsername(loginRequest.username());
-        String token = jwtService.generateToken(userDetails, user);
+        String authorizationToken = jwtService.generateToken(userDetails, user);
+        String refreshToken = jwtService.generateRefreshToken(userDetails);
 
-        return ResponseEntity.ok(new LoginUserTokenDto(token));
+        return ResponseEntity.ok(new LoginUserTokenDto(authorizationToken, refreshToken));
     }
 
 }

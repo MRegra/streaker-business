@@ -3,6 +3,8 @@ package com.streaker.config;
 import com.streaker.model.User;
 import com.streaker.repository.UserRepository;
 import com.streaker.utlis.enums.Role;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("CustomUserDetailsService Tests")
 class CustomUserDetailsServiceTest {
 
     @Mock
@@ -27,28 +30,36 @@ class CustomUserDetailsServiceTest {
     @InjectMocks
     private CustomUserDetailsService customUserDetailsService;
 
-    @Test
-    void shouldReturnUserDetails_whenUserExists() {
-        User user = new User();
-        user.setUsername("testadmin");
-        user.setEmail("admin@test.com");
-        user.setPassword("hashedpassword");
-        user.setRole(Role.ADMIN);
+    @Nested
+    @DisplayName("loadUserByUsername")
+    class LoadUserByUsername {
 
-        when(userRepository.findByUsername("testadmin")).thenReturn(Optional.of(user));
+        @Test
+        @DisplayName("should return user details when user exists")
+        void shouldReturnUserDetails_whenUserExists() {
+            User user = new User();
+            user.setUsername("testadmin");
+            user.setEmail("admin@test.com");
+            user.setPassword("hashedpassword");
+            user.setRole(Role.ADMIN);
 
-        UserDetails result = customUserDetailsService.loadUserByUsername("testadmin");
+            when(userRepository.findByUsername("testadmin")).thenReturn(Optional.of(user));
 
-        assertEquals("testadmin", result.getUsername());
-        assertEquals("hashedpassword", result.getPassword());
-        assertTrue(result.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")));
-    }
+            UserDetails result = customUserDetailsService.loadUserByUsername("testadmin");
 
-    @Test
-    void shouldThrowException_whenUserNotFound() {
-        when(userRepository.findByUsername("testadmin")).thenReturn(Optional.empty());
+            assertEquals("testadmin", result.getUsername());
+            assertEquals("hashedpassword", result.getPassword());
+            assertTrue(result.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")));
+        }
 
-        assertThrows(UsernameNotFoundException.class,
-                () -> customUserDetailsService.loadUserByUsername("testadmin"));
+        @Test
+        @DisplayName("should throw exception when user not found")
+        void shouldThrowException_whenUserNotFound() {
+            when(userRepository.findByUsername("testadmin")).thenReturn(Optional.empty());
+
+            assertThrows(UsernameNotFoundException.class, () ->
+                    customUserDetailsService.loadUserByUsername("testadmin"));
+        }
     }
 }

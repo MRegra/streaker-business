@@ -19,17 +19,19 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.AssertionsKt.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("test")
-public class RewardServiceImplTest {
+class RewardServiceImplTest {
 
     @Mock
     private RewardRepository rewardRepository;
@@ -68,29 +70,50 @@ public class RewardServiceImplTest {
     }
 
     @Test
-    void testCreateReward() {
+    void shouldCreateReward_whenUserExists() {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(rewardRepository.save(any(Reward.class))).thenReturn(reward);
 
         RewardResponseDto response = rewardService.createReward(userId, requestDto);
 
-        assertNotNull(response);
-        assertEquals("Free Day", response.name());
-        assertFalse(response.unlocked());
+        assertAll("Create Reward",
+                () -> assertNotNull(response),
+                () -> assertEquals("Free Day", response.name()),
+                () -> assertFalse(response.unlocked()),
+                () -> assertEquals(rewardId, response.uuid())
+        );
+
+        verify(userRepository).findById(userId);
+        verify(rewardRepository).save(any(Reward.class));
     }
 
     @Test
-    void testGetRewardsByUser() {
+    void shouldThrow_whenCreatingRewardWithNonexistentUser() {
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> rewardService.createReward(userId, requestDto));
+
+        verify(userRepository).findById(userId);
+        verifyNoMoreInteractions(rewardRepository);
+    }
+
+    @Test
+    void shouldReturnRewardsByUser() {
         when(rewardRepository.findByUserUuid(userId)).thenReturn(List.of(reward));
 
         List<RewardResponseDto> rewards = rewardService.getRewardsByUser(userId);
 
-        assertEquals(1, rewards.size());
-        assertEquals(rewardId, rewards.getFirst().uuid());
+        assertAll("Get rewards by user",
+                () -> assertEquals(1, rewards.size()),
+                () -> assertEquals(rewardId, rewards.getFirst().uuid()),
+                () -> assertEquals("Free Day", rewards.getFirst().name())
+        );
+
+        verify(rewardRepository).findByUserUuid(userId);
     }
 
     @Test
-    void testUnlockReward() {
+    void shouldUnlockReward_whenExists() {
         reward.setUnlocked(false);
         when(rewardRepository.findById(rewardId)).thenReturn(Optional.of(reward));
         when(rewardRepository.save(any(Reward.class))).thenAnswer(invocation -> {
@@ -101,15 +124,23 @@ public class RewardServiceImplTest {
 
         RewardResponseDto result = rewardService.unlockReward(rewardId);
 
-        assertTrue(result.unlocked());
-        assertNotNull(result.unlockedAt());
+        assertAll("Unlock reward",
+                () -> assertTrue(result.unlocked()),
+                () -> assertNotNull(result.unlockedAt()),
+                () -> assertEquals(rewardId, result.uuid())
+        );
+
+        verify(rewardRepository).findById(rewardId);
         verify(rewardRepository).save(any(Reward.class));
     }
 
     @Test
-    void testUnlockReward_notFound() {
+    void shouldThrow_whenUnlockingNonexistentReward() {
         when(rewardRepository.findById(rewardId)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> rewardService.unlockReward(rewardId));
+
+        verify(rewardRepository).findById(rewardId);
+        verifyNoMoreInteractions(rewardRepository);
     }
 }

@@ -8,6 +8,8 @@ import com.streaker.repository.StreakRepository;
 import com.streaker.repository.UserRepository;
 import com.streaker.utils.TestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -27,7 +29,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @WithMockUser(username = "testuser-streak", roles = "USER")
-public class StreakControllerIntegrationTest extends PostgresTestContainerConfig {
+@DisplayName("StreakController Integration Tests")
+class StreakControllerIntegrationTest extends PostgresTestContainerConfig {
 
     @Autowired
     private MockMvc mockMvc;
@@ -41,40 +44,69 @@ public class StreakControllerIntegrationTest extends PostgresTestContainerConfig
     private UUID userId;
 
     @BeforeEach
-    public void setup() {
+    void setUp() {
         cleanDatabase();
-
         User user = TestDataFactory.createUser("testuser-streak", "testuser-streak@example.com", "password123");
-        user = userRepository.save(user);
-        this.userId = user.getUuid();
+        userId = userRepository.save(user).getUuid();
     }
 
-    @Test
-    public void shouldReturnAllStreaksForUser() throws Exception {
-        User user = userRepository.findById(userId).orElseThrow();
+    @Nested
+    @DisplayName("GET /v1/users/{userId}/streaks")
+    class GetAllStreaks {
 
-        Streak streak1 = TestDataFactory.createStreak(user);
-        streakRepository.save(streak1);
+        @Test
+        @DisplayName("Should return all streaks for a user")
+        void shouldReturnAllStreaks() throws Exception {
+            User user = userRepository.findById(userId).orElseThrow();
+            streakRepository.save(TestDataFactory.createStreak(user));
+            streakRepository.save(TestDataFactory.createStreak(user));
 
-        Streak streak2 = TestDataFactory.createStreak(user);
-        streakRepository.save(streak2);
+            mockMvc.perform(get("/v1/users/{userId}/streaks", userId)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.length()").value(2));
+        }
 
-        mockMvc.perform(get("/v1/users/" + userId + "/streaks")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2));
+        @Test
+        @DisplayName("Should return empty list if user has no streaks")
+        void shouldReturnEmptyList() throws Exception {
+            mockMvc.perform(get("/v1/users/{userId}/streaks", userId))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.length()").value(0));
+        }
+
+        @Test
+        @DisplayName("Should return empty list if user does not exist")
+        void shouldReturnEmptyForInvalidUser() throws Exception {
+            UUID fakeUserId = UUID.randomUUID();
+            mockMvc.perform(get("/v1/users/{userId}/streaks", fakeUserId))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.length()").value(0));
+        }
     }
 
-    @Test
-    public void shouldReturnSingleStreakById() throws Exception {
-        User user = userRepository.findById(userId).orElseThrow();
+    @Nested
+    @DisplayName("GET /v1/users/{userId}/streaks/{streakId}")
+    class GetStreakById {
 
-        Streak streak = TestDataFactory.createStreak(user);
-        streak = streakRepository.save(streak);
+        @Test
+        @DisplayName("Should return the correct streak for user")
+        void shouldReturnCorrectStreak() throws Exception {
+            User user = userRepository.findById(userId).orElseThrow();
+            Streak streak = streakRepository.save(TestDataFactory.createStreak(user));
 
-        mockMvc.perform(get("/v1/users/" + userId + "/streaks/" + streak.getUuid())
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.uuid").value(streak.getUuid().toString()));
+            mockMvc.perform(get("/v1/users/{userId}/streaks/{streakId}", userId, streak.getUuid())
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.uuid").value(streak.getUuid().toString()));
+        }
+
+        @Test
+        @DisplayName("Should return 404 if streak not found")
+        void shouldReturnNotFound() throws Exception {
+            UUID fakeStreakId = UUID.randomUUID();
+            mockMvc.perform(get("/v1/users/{userId}/streaks/{streakId}", userId, fakeStreakId))
+                    .andExpect(status().isNotFound());
+        }
     }
 }

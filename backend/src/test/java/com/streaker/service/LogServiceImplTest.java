@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -28,7 +29,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("test")
-public class LogServiceImplTest {
+class LogServiceImplTest {
 
     @Mock
     private LogRepository logRepository;
@@ -47,7 +48,6 @@ public class LogServiceImplTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-
         habitId = UUID.randomUUID();
         logId = UUID.randomUUID();
 
@@ -64,53 +64,77 @@ public class LogServiceImplTest {
     }
 
     @Test
-    void testCreateLog() {
+    void createLog_shouldReturnResponseDto_whenHabitExists() {
         when(habitRepository.findById(habitId)).thenReturn(Optional.of(habit));
         when(logRepository.save(any(Log.class))).thenReturn(log);
 
         LogResponseDto response = logService.createLog(habitId, requestDto);
 
-        assertNotNull(response);
-        assertEquals(logId, response.uuid());
-        assertTrue(response.completed());
+        assertAll("Log creation",
+                () -> assertNotNull(response),
+                () -> assertEquals(logId, response.uuid()),
+                () -> assertTrue(response.completed()),
+                () -> assertEquals(LocalDate.of(2025, 7, 20), response.date())
+        );
+
+        verify(habitRepository).findById(habitId);
+        verify(logRepository).save(any(Log.class));
     }
 
     @Test
-    void testGetLogsByHabit() {
+    void createLog_shouldThrow_whenHabitNotFound() {
+        when(habitRepository.findById(habitId)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () ->
+                logService.createLog(habitId, requestDto));
+    }
+
+    @Test
+    void getLogsByHabit_shouldReturnListOfResponses() {
         when(logRepository.findByHabitUuid(habitId)).thenReturn(List.of(log));
 
         List<LogResponseDto> logs = logService.getLogsByHabit(habitId);
 
-        assertEquals(1, logs.size());
-        assertEquals(logId, logs.getFirst().uuid());
+        assertAll("Log list",
+                () -> assertEquals(1, logs.size()),
+                () -> assertEquals(logId, logs.getFirst().uuid()),
+                () -> assertEquals(habitId, logs.getFirst().habitId())
+        );
     }
 
     @Test
-    void testGetLog_success() {
+    void getLog_shouldReturnResponse_whenLogExists() {
         when(logRepository.findById(logId)).thenReturn(Optional.of(log));
 
         LogResponseDto response = logService.getLog(logId);
 
-        assertEquals(logId, response.uuid());
-        assertEquals(habitId, response.habitId());
+        assertAll("Single log retrieval",
+                () -> assertEquals(logId, response.uuid()),
+                () -> assertEquals(habitId, response.habitId()),
+                () -> assertTrue(response.completed())
+        );
     }
 
     @Test
-    void testGetLog_notFound() {
+    void getLog_shouldThrow_whenLogNotFound() {
         when(logRepository.findById(logId)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> logService.getLog(logId));
     }
 
     @Test
-    void testMarkLogCompleted() {
+    void markLogCompleted_shouldSetCompletedTrue_andSave() {
         log.setCompleted(false);
         when(logRepository.findById(logId)).thenReturn(Optional.of(log));
         when(logRepository.save(any(Log.class))).thenReturn(log);
 
         LogResponseDto result = logService.markLogCompleted(logId);
 
-        assertTrue(result.completed());
+        assertAll("Mark completed",
+                () -> assertTrue(result.completed()),
+                () -> assertEquals(logId, result.uuid())
+        );
+
         verify(logRepository).save(any(Log.class));
     }
 }
