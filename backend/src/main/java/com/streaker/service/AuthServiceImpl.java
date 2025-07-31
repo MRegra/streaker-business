@@ -44,7 +44,7 @@ public class AuthServiceImpl implements AuthService {
             String newAccessToken = jwtService.generateToken(userDetails, userResponseDto);
             String newRefreshToken = jwtService.generateRefreshToken(userDetails);
 
-            return ResponseEntity.ok(new AuthTokensResponse(newAccessToken, refreshToken));
+            return ResponseEntity.ok(new AuthTokensResponse(newAccessToken, newRefreshToken));
 
         } catch (ExpiredJwtException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh token expired");
