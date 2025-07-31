@@ -1,3 +1,13 @@
+# [2.0.0](https://github.com/MRegra/streaker-business/compare/v1.2.0...v2.0.0) (2025-07-31)
+
+
+* Feature jwt refresh token ([#1](https://github.com/MRegra/streaker-business/issues/1)) ([62fc9a2](https://github.com/MRegra/streaker-business/commit/62fc9a25be5e780577a0355ebbe6a051b734b18a))
+
+
+### BREAKING CHANGES
+
+* Refactoring all tests and adding the refresh token
+
 # [1.2.0](https://github.com/MRegra/streaker-business/compare/v1.1.0...v1.2.0) (2025-07-30)
 
 
