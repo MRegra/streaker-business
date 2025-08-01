@@ -1,5 +1,6 @@
 package com.streaker.exception;
 
+import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -54,6 +55,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex, HttpServletRequest request) {
         return buildErrorResponse(request, HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", ex);
+    }
+
+    @ExceptionHandler(TooManyRequestsException.class)
+    public ResponseEntity<ErrorResponse> handleCustomRateLimit(TooManyRequestsException ex, HttpServletRequest request) {
+        return buildErrorResponse(request, HttpStatus.TOO_MANY_REQUESTS, "Too many login attempts, please try later", ex);
+    }
+
+    @ExceptionHandler(RequestNotPermitted.class)
+    public ResponseEntity<ErrorResponse> handleRateLimiter(RequestNotPermitted ex, HttpServletRequest request) {
+        return buildErrorResponse(request, HttpStatus.TOO_MANY_REQUESTS, "Rate limit exceeded", ex);
     }
 
     private ResponseEntity<ErrorResponse> buildErrorResponse(HttpServletRequest request, HttpStatus status, String error, Exception ex) {

@@ -1,5 +1,6 @@
 package com.streaker.controller.user;
 
+import com.streaker.annotations.CustomRateLimit;
 import com.streaker.config.JwtAuthorizationValidator;
 import com.streaker.config.JwtService;
 import com.streaker.controller.user.dto.CreateUserDto;
@@ -69,6 +70,7 @@ public class UserController {
     }
 
     @Operation(summary = "Authenticate and return JWT")
+    @CustomRateLimit(limit = 5, windowSeconds = 60)
     @PostMapping("login")
     public ResponseEntity<LoginUserTokenDto> login(@RequestBody LoginUserDto loginRequest) {
         Authentication authentication = authenticationManager.authenticate(

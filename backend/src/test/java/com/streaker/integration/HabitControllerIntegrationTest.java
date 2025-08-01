@@ -1,7 +1,8 @@
 package com.streaker.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.streaker.PostgresTestContainerConfig;
+import com.streaker.BaseIntegrationTest;
+import com.streaker.TestContainerConfig;
 import com.streaker.controller.auth.dto.AuthTokensResponse;
 import com.streaker.controller.habit.dto.HabitRequestDto;
 import com.streaker.integration.utils.IntegrationTestUtils;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -35,7 +37,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @DisplayName("HabitController Integration Tests")
-class HabitControllerIntegrationTest extends PostgresTestContainerConfig {
+@Import(TestContainerConfig.class)
+class HabitControllerIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;

@@ -1,7 +1,7 @@
 package com.streaker.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.streaker.PostgresTestContainerConfig;
+import com.streaker.BaseIntegrationTest;
 import com.streaker.controller.auth.dto.AuthTokensResponse;
 import com.streaker.controller.auth.dto.RefreshTokenRequest;
 import com.streaker.integration.utils.IntegrationTestUtils;
@@ -26,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
-class AuthControllerIntegrationTest extends PostgresTestContainerConfig {
+public class AuthControllerIntegrationTest extends BaseIntegrationTest {
 
     @Value("${jwt.secret}")
     private String jwtSecret;

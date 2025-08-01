@@ -1,7 +1,8 @@
 package com.streaker.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.streaker.PostgresTestContainerConfig;
+import com.streaker.BaseIntegrationTest;
+import com.streaker.TestContainerConfig;
 import com.streaker.model.Streak;
 import com.streaker.model.User;
 import com.streaker.repository.StreakRepository;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
@@ -30,7 +32,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @WithMockUser(username = "testuser-streak", roles = "USER")
 @DisplayName("StreakController Integration Tests")
-class StreakControllerIntegrationTest extends PostgresTestContainerConfig {
+@Import(TestContainerConfig.class)
+class StreakControllerIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
