@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/MRegra/streaker-business/compare/v2.0.1...v2.1.0) (2025-08-01)
+
+
+### Features
+
+* [Issue [#2](https://github.com/MRegra/streaker-business/issues/2)] - Adding redis + resilience4j for rate limiting on APIs (only login for now) ([#27](https://github.com/MRegra/streaker-business/issues/27)) ([47ec92a](https://github.com/MRegra/streaker-business/commit/47ec92a923c362e1127d38e5e9faaad2d495993e))
+
 ## [2.0.1](https://github.com/MRegra/streaker-business/compare/v2.0.0...v2.0.1) (2025-08-01)
 
 
