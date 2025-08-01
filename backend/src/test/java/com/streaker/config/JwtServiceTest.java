@@ -1,6 +1,6 @@
 package com.streaker.config;
 
-import com.streaker.PostgresTestContainerConfig;
+import com.streaker.TestContainerConfig;
 import com.streaker.controller.user.dto.UserResponseDto;
 import com.streaker.utlis.enums.Role;
 import io.jsonwebtoken.MalformedJwtException;
@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,7 +25,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @SpringBootTest
 @ActiveProfiles("test")
 @DisplayName("JwtService Tests")
-class JwtServiceTest extends PostgresTestContainerConfig {
+@Import(TestContainerConfig.class)
+class JwtServiceTest {
 
     @Autowired
     private JwtService jwtService;

@@ -1,7 +1,8 @@
 package com.streaker.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.streaker.PostgresTestContainerConfig;
+import com.streaker.BaseIntegrationTest;
+import com.streaker.TestContainerConfig;
 import com.streaker.controller.auth.dto.AuthTokensResponse;
 import com.streaker.integration.utils.IntegrationTestUtils;
 import com.streaker.model.User;
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -30,7 +32,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
-public class UserControllerIntegrationTest extends PostgresTestContainerConfig {
+@Import(TestContainerConfig.class)
+public class UserControllerIntegrationTest extends BaseIntegrationTest {
 
     private static final String USERNAME = "john";
     private static final String EMAIL = "john@example.com";
