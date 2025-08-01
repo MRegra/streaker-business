@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/MRegra/streaker-business/compare/v2.0.0...v2.0.1) (2025-08-01)
+
+
+### Bug Fixes
+
+* Adding prod ready checklist ([#26](https://github.com/MRegra/streaker-business/issues/26)) ([599824e](https://github.com/MRegra/streaker-business/commit/599824e8927831c68c49cf41dd7228e165184b94))
+
 # [2.0.0](https://github.com/MRegra/streaker-business/compare/v1.2.0...v2.0.0) (2025-07-31)
 
 
