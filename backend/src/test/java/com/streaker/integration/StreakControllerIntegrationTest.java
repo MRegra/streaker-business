@@ -3,6 +3,8 @@ package com.streaker.integration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streaker.BaseIntegrationTest;
 import com.streaker.TestContainerConfig;
+import com.streaker.controller.auth.dto.AuthTokensResponse;
+import com.streaker.integration.utils.IntegrationTestUtils;
 import com.streaker.model.Streak;
 import com.streaker.model.User;
 import com.streaker.repository.StreakRepository;
@@ -17,7 +19,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -30,10 +31,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
-@WithMockUser(username = "testuser-streak", roles = "USER")
 @DisplayName("StreakController Integration Tests")
 @Import(TestContainerConfig.class)
 class StreakControllerIntegrationTest extends BaseIntegrationTest {
+
+    private static final String TESTUSER_STREAK = "testuser_streak";
+    private static final String EMAIL = "testuser-streak@example.com";
+    private static final String PASSWORD = "Password123";
 
     @Autowired
     private MockMvc mockMvc;
@@ -45,12 +49,19 @@ class StreakControllerIntegrationTest extends BaseIntegrationTest {
     private StreakRepository streakRepository;
 
     private UUID userId;
+    private String jwt;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         cleanDatabase();
-        User user = TestDataFactory.createUser("testuser-streak", "testuser-streak@example.com", "password123");
-        userId = userRepository.save(user).getUuid();
+
+        AuthTokensResponse tokens = IntegrationTestUtils.registerAndLogin(
+                mockMvc, objectMapper,
+                TESTUSER_STREAK, EMAIL, PASSWORD
+        );
+
+        jwt = tokens.accessToken();
+        userId = userRepository.findByEmail(EMAIL).orElseThrow().getUuid();
     }
 
     @Nested
@@ -65,6 +76,7 @@ class StreakControllerIntegrationTest extends BaseIntegrationTest {
             streakRepository.save(TestDataFactory.createStreak(user));
 
             mockMvc.perform(get("/v1/users/{userId}/streaks", userId)
+                            .header("Authorization", "Bearer " + jwt)
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.length()").value(2));
@@ -73,18 +85,20 @@ class StreakControllerIntegrationTest extends BaseIntegrationTest {
         @Test
         @DisplayName("Should return empty list if user has no streaks")
         void shouldReturnEmptyList() throws Exception {
-            mockMvc.perform(get("/v1/users/{userId}/streaks", userId))
+            mockMvc.perform(get("/v1/users/{userId}/streaks", userId)
+                            .header("Authorization", "Bearer " + jwt))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.length()").value(0));
         }
 
         @Test
-        @DisplayName("Should return empty list if user does not exist")
-        void shouldReturnEmptyForInvalidUser() throws Exception {
+        @DisplayName("Should return 403 if user does not exist - Forbidden")
+        void shouldReturnNotFoundForInvalidUser() throws Exception {
             UUID fakeUserId = UUID.randomUUID();
-            mockMvc.perform(get("/v1/users/{userId}/streaks", fakeUserId))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.length()").value(0));
+
+            mockMvc.perform(get("/v1/users/{userId}/streaks", fakeUserId)
+                            .header("Authorization", "Bearer " + jwt))
+                    .andExpect(status().isForbidden());
         }
     }
 
@@ -99,6 +113,7 @@ class StreakControllerIntegrationTest extends BaseIntegrationTest {
             Streak streak = streakRepository.save(TestDataFactory.createStreak(user));
 
             mockMvc.perform(get("/v1/users/{userId}/streaks/{streakId}", userId, streak.getUuid())
+                            .header("Authorization", "Bearer " + jwt)
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.uuid").value(streak.getUuid().toString()));
@@ -108,7 +123,9 @@ class StreakControllerIntegrationTest extends BaseIntegrationTest {
         @DisplayName("Should return 404 if streak not found")
         void shouldReturnNotFound() throws Exception {
             UUID fakeStreakId = UUID.randomUUID();
-            mockMvc.perform(get("/v1/users/{userId}/streaks/{streakId}", userId, fakeStreakId))
+
+            mockMvc.perform(get("/v1/users/{userId}/streaks/{streakId}", userId, fakeStreakId)
+                            .header("Authorization", "Bearer " + jwt))
                     .andExpect(status().isNotFound());
         }
     }

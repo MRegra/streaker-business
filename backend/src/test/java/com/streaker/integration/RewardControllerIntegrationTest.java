@@ -3,7 +3,9 @@ package com.streaker.integration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streaker.BaseIntegrationTest;
 import com.streaker.TestContainerConfig;
+import com.streaker.controller.auth.dto.AuthTokensResponse;
 import com.streaker.controller.reward.dto.RewardRequestDto;
+import com.streaker.integration.utils.IntegrationTestUtils;
 import com.streaker.model.Reward;
 import com.streaker.model.User;
 import com.streaker.repository.RewardRepository;
@@ -18,7 +20,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -34,11 +36,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
-@WithMockUser(username = "testuser-reward", roles = "USER")
 @DisplayName("RewardController Integration Tests")
 @Import(TestContainerConfig.class)
 class RewardControllerIntegrationTest extends BaseIntegrationTest {
 
+    public static final String TESTUSER_REWARD = "testuser_reward";
+    public static final String EMAIL = "testuser-reward@example.com";
+    public static final String PASSWORD = "Password123";
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -49,12 +53,17 @@ class RewardControllerIntegrationTest extends BaseIntegrationTest {
     private UserRepository userRepository;
 
     private UUID userId;
+    private String jwt;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         cleanDatabase();
-        User user = TestDataFactory.createUser("testuser-reward", "testuser-reward@example.com", "password123");
-        userId = userRepository.save(user).getUuid();
+
+        AuthTokensResponse tokens = IntegrationTestUtils.registerAndLogin(mockMvc, objectMapper,
+                TESTUSER_REWARD, EMAIL, PASSWORD);
+
+        jwt = tokens.accessToken();
+        userId = userRepository.findByEmail(EMAIL).orElseThrow().getUuid();
     }
 
     @Nested
@@ -67,6 +76,7 @@ class RewardControllerIntegrationTest extends BaseIntegrationTest {
             RewardRequestDto dto = new RewardRequestDto("Buy Coffee", "Morning treat", 10);
 
             mockMvc.perform(post("/v1/users/{userId}/rewards", userId)
+                            .header("Authorization", "Bearer " + jwt)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(dto)))
                     .andExpect(status().isOk())
@@ -81,24 +91,58 @@ class RewardControllerIntegrationTest extends BaseIntegrationTest {
         @Test
         @DisplayName("Should return 400 when required fields are missing")
         void shouldReturnBadRequestForMissingFields() throws Exception {
-            RewardRequestDto invalidDto = new RewardRequestDto(null, null, 5);
+            String invalidJson = """
+                    {
+                        "name": null,
+                        "description": null,
+                        "pointsRequired": 5
+                    }
+                    """;
 
             mockMvc.perform(post("/v1/users/{userId}/rewards", userId)
+                            .header("Authorization", "Bearer " + jwt)
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(invalidDto)))
-                    .andExpect(status().isBadRequest());
+                            .content(invalidJson))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.error").value("Validation Failed"))
+                    .andExpect(jsonPath("$.message", containsString("name: Name must be specified")));
         }
 
         @Test
-        @DisplayName("Should return 404 when user does not exist")
+        @DisplayName("Should return 400 for invalid input values")
+        void shouldReturn400WhenRewardRequestIsInvalid() throws Exception {
+            String invalidJson = """
+                    {
+                        "name": "",
+                        "description": "This description is way too long %s",
+                        "pointsRequired": 0
+                    }
+                    """.formatted("a".repeat(201));
+
+            mockMvc.perform(post("/v1/users/{userId}/rewards", userId)
+                            .header("Authorization", "Bearer " + jwt)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(invalidJson))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.error").value("Validation Failed"))
+                    .andExpect(jsonPath("$.message", containsString("name: Name must be specified")))
+                    .andExpect(jsonPath("$.message", containsString("description: Description's maximum length is 200 chars.")))
+                    .andExpect(jsonPath("$.message", containsString("pointsRequired: Points required must be greater than zero")));
+        }
+
+        @Test
+        @DisplayName("Should return 403 when user does not exist - Forbidden")
         void shouldReturnNotFoundForNonExistentUser() throws Exception {
             RewardRequestDto dto = new RewardRequestDto("Gym Pass", "Weekend pass", 15);
             UUID fakeUserId = UUID.randomUUID();
 
             mockMvc.perform(post("/v1/users/{userId}/rewards", fakeUserId)
+                            .header("Authorization", "Bearer " + jwt)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(dto)))
-                    .andExpect(status().isNotFound());
+                    .andExpect(status().isForbidden());
         }
     }
 
@@ -113,7 +157,8 @@ class RewardControllerIntegrationTest extends BaseIntegrationTest {
             rewardRepository.save(TestDataFactory.createReward(user));
             rewardRepository.save(TestDataFactory.createReward(user));
 
-            mockMvc.perform(get("/v1/users/{userId}/rewards", userId))
+            mockMvc.perform(get("/v1/users/{userId}/rewards", userId)
+                            .header("Authorization", "Bearer " + jwt))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.length()").value(2));
         }
@@ -121,18 +166,20 @@ class RewardControllerIntegrationTest extends BaseIntegrationTest {
         @Test
         @DisplayName("Should return empty list if user has no rewards")
         void shouldReturnEmptyRewardList() throws Exception {
-            mockMvc.perform(get("/v1/users/{userId}/rewards", userId))
+            mockMvc.perform(get("/v1/users/{userId}/rewards", userId)
+                            .header("Authorization", "Bearer " + jwt))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.length()").value(0));
         }
 
         @Test
-        @DisplayName("Should return 404 if user does not exist")
+        @DisplayName("Should return 403 if user does not exist - Forbidden")
         void shouldReturnNotFoundForNonExistentUser() throws Exception {
             UUID fakeUserId = UUID.randomUUID();
-            mockMvc.perform(get("/v1/users/{userId}/rewards", fakeUserId))
-                    .andExpect(status().isOk()) // still ok because it's a query and may return empty
-                    .andExpect(jsonPath("$.length()").value(0));
+
+            mockMvc.perform(get("/v1/users/{userId}/rewards", fakeUserId)
+                            .header("Authorization", "Bearer " + jwt))
+                    .andExpect(status().isForbidden());
         }
     }
 
@@ -146,7 +193,8 @@ class RewardControllerIntegrationTest extends BaseIntegrationTest {
             User user = userRepository.findById(userId).orElseThrow();
             Reward reward = rewardRepository.save(TestDataFactory.createReward(user));
 
-            mockMvc.perform(post("/v1/users/{userId}/rewards/{rewardId}/unlock", userId, reward.getUuid()))
+            mockMvc.perform(post("/v1/users/{userId}/rewards/{rewardId}/unlock", userId, reward.getUuid())
+                            .header("Authorization", "Bearer " + jwt))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.unlocked").value(true));
         }
@@ -156,7 +204,8 @@ class RewardControllerIntegrationTest extends BaseIntegrationTest {
         void shouldReturnNotFoundForInvalidReward() throws Exception {
             UUID fakeRewardId = UUID.randomUUID();
 
-            mockMvc.perform(post("/v1/users/{userId}/rewards/{rewardId}/unlock", userId, fakeRewardId))
+            mockMvc.perform(post("/v1/users/{userId}/rewards/{rewardId}/unlock", userId, fakeRewardId)
+                            .header("Authorization", "Bearer " + jwt))
                     .andExpect(status().isNotFound());
         }
     }

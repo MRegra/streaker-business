@@ -27,6 +27,7 @@ import java.util.UUID;
 
 import static com.streaker.utlis.enums.Frequency.DAILY;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -40,6 +41,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(TestContainerConfig.class)
 class HabitControllerIntegrationTest extends BaseIntegrationTest {
 
+    public static final String USER = "habit_user";
+    public static final String EMAIL = "habit@example.com";
+    public static final String PASSWORD = "Strongpass123";
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -62,9 +66,9 @@ class HabitControllerIntegrationTest extends BaseIntegrationTest {
     void setup() throws Exception {
         cleanDatabase();
 
-        AuthTokensResponse tokens = IntegrationTestUtils.registerAndLogin(mockMvc, objectMapper, "habit-user", "habit@example.com", "strongpass");
+        AuthTokensResponse tokens = IntegrationTestUtils.registerAndLogin(mockMvc, objectMapper, USER, EMAIL, PASSWORD);
         jwt = tokens.accessToken();
-        userId = userRepository.findByEmail("habit@example.com").orElseThrow().getUuid();
+        userId = userRepository.findByEmail(EMAIL).orElseThrow().getUuid();
 
         var user = userRepository.findById(userId).orElseThrow();
         categoryId = categoryRepository.save(TestDataFactory.createCategory(user)).getUuid();
@@ -111,6 +115,29 @@ class HabitControllerIntegrationTest extends BaseIntegrationTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(invalidJson))
                     .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("should return 400 when habit input is invalid")
+        void shouldReturn400ForInvalidHabitInput() throws Exception {
+            String invalidJson = """
+                    {
+                        "name": "",
+                        "description": "",
+                        "frequency": null,
+                        "categoryId": null,
+                        "streakId": null
+                    }
+                    """;
+
+            mockMvc.perform(post("/v1/users/{userId}/habits", userId)
+                            .header("Authorization", "Bearer " + jwt)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(invalidJson))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.error").value("Validation Failed"))
+                    .andExpect(jsonPath("$.message", containsString("streakId: Streak ID must be specified;")));
         }
     }
 

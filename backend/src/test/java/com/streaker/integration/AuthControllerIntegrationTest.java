@@ -2,6 +2,7 @@ package com.streaker.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.streaker.BaseIntegrationTest;
+import com.streaker.TestContainerConfig;
 import com.streaker.controller.auth.dto.AuthTokensResponse;
 import com.streaker.controller.auth.dto.RefreshTokenRequest;
 import com.streaker.integration.utils.IntegrationTestUtils;
@@ -14,10 +15,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -26,8 +29,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
+@DisplayName("AuthController Integration Tests")
+@Import(TestContainerConfig.class)
 public class AuthControllerIntegrationTest extends BaseIntegrationTest {
 
+    public static final String USER = "refreshUser";
+    public static final String EMAIL = "refresh@example.com";
+    public static final String PASSWORD = "Refresh123";
     @Value("${jwt.secret}")
     private String jwtSecret;
     @Autowired
@@ -44,7 +52,7 @@ public class AuthControllerIntegrationTest extends BaseIntegrationTest {
         cleanDatabase();
 
         AuthTokensResponse tokens = IntegrationTestUtils.registerLoginAndGetTokens(
-                mockMvc, objectMapper, "refreshUser", "refresh@example.com", "refresh123"
+                mockMvc, objectMapper, USER, EMAIL, PASSWORD
         );
         this.refreshToken = tokens.refreshToken();
     }
@@ -87,14 +95,16 @@ public class AuthControllerIntegrationTest extends BaseIntegrationTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isBadRequest())
-                    .andExpect(content().string("Missing refresh token"));
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.error").value("Validation Failed"))
+                    .andExpect(jsonPath("$.message", containsString("refreshToken: Refresh token must not be blank")));
         }
 
         @Test
         @DisplayName("should return 401 Unauthorized for expired refresh token")
         void expiredRefreshToken_returnsUnauthorized() throws Exception {
             // Generate a short-lived token for test purposes
-            String expiredToken = IntegrationTestUtils.generateExpiredRefreshToken("refreshUser", jwtSecret);
+            String expiredToken = IntegrationTestUtils.generateExpiredRefreshToken(USER, jwtSecret);
 
             RefreshTokenRequest request = new RefreshTokenRequest(expiredToken);
 

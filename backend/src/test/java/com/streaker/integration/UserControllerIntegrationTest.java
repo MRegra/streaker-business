@@ -6,9 +6,6 @@ import com.streaker.TestContainerConfig;
 import com.streaker.controller.auth.dto.AuthTokensResponse;
 import com.streaker.integration.utils.IntegrationTestUtils;
 import com.streaker.model.User;
-import com.streaker.repository.CategoryRepository;
-import com.streaker.repository.HabitRepository;
-import com.streaker.repository.StreakRepository;
 import com.streaker.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -25,7 +23,9 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -37,7 +37,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
 
     private static final String USERNAME = "john";
     private static final String EMAIL = "john@example.com";
-    private static final String PASSWORD = "securePassword";
+    private static final String PASSWORD = "securePassword1";
 
     @Autowired
     private MockMvc mockMvc;
@@ -45,12 +45,6 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     private ObjectMapper objectMapper;
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private CategoryRepository categoryRepository;
-    @Autowired
-    private HabitRepository habitRepository;
-    @Autowired
-    private StreakRepository streakRepository;
 
     private String jwt;
     private UUID userId;
@@ -113,16 +107,88 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
         @Test
         @DisplayName("Should return 403 for another registered user")
         void shouldReturn403_forAnotherRegisteredUser() throws Exception {
-            String intruderEmail = "intruder@example.com";
-            String intruderUsername = "intruder";
-            String intruderPassword = "hackMe123";
-
-            AuthTokensResponse intruderTokens = IntegrationTestUtils.registerAndLogin(
-                    mockMvc, objectMapper, intruderUsername, intruderEmail, intruderPassword);
+            AuthTokensResponse tokens = IntegrationTestUtils.registerAndLogin(
+                    mockMvc, objectMapper, "intruder", "intruder@example.com", "hackMe123");
 
             mockMvc.perform(get("/v1/users/{id}", userId)
-                            .header("Authorization", "Bearer " + intruderTokens.accessToken()))
+                            .header("Authorization", "Bearer " + tokens.accessToken()))
                     .andExpect(status().isForbidden());
+        }
+    }
+
+    @Nested
+    @DisplayName("POST /v1/users/register validation")
+    class RegisterValidation {
+
+        private static final String REGISTER_URL = "/v1/users/register";
+
+        @Test
+        void shouldFailWhenAllFieldsAreBlank() throws Exception {
+            String payload = """
+                        {
+                          "username": "",
+                          "email": "",
+                          "password": ""
+                        }
+                    """;
+
+            mockMvc.perform(post(REGISTER_URL)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(payload))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message", containsString("Username is required")))
+                    .andExpect(jsonPath("$.message", containsString("Email is required")))
+                    .andExpect(jsonPath("$.message", containsString("password: Password must contain at least one lowercase letter")));
+        }
+
+        @Test
+        void shouldFailWhenEmailIsInvalid() throws Exception {
+            String payload = """
+                        {
+                          "username": "testuser",
+                          "email": "invalid-email",
+                          "password": "validPass123"
+                        }
+                    """;
+
+            mockMvc.perform(post(REGISTER_URL)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(payload))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message", containsString("email: Invalid email format")));
+        }
+
+        @Test
+        void shouldFailWhenPasswordTooShort() throws Exception {
+            String payload = """
+                        {
+                          "username": "user",
+                          "email": "user@example.com",
+                          "password": "123"
+                        }
+                    """;
+
+            mockMvc.perform(post(REGISTER_URL)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(payload))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message", containsString("password: Password must be between 8 and 64")));
+        }
+
+        @Test
+        void shouldSucceedWithValidInput() throws Exception {
+            String payload = """
+                        {
+                          "username": "validuser",
+                          "email": "validuser@example.com",
+                          "password": "strongPass123"
+                        }
+                    """;
+
+            mockMvc.perform(post(REGISTER_URL)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(payload))
+                    .andExpect(status().isOk());
         }
     }
 }

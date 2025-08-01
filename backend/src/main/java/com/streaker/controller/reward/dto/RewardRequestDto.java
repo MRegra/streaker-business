@@ -10,6 +10,7 @@ public record RewardRequestDto(
         String name,
 
         @Size(max = 200, message = "Description's maximum length is 200 chars.")
+        @NotBlank(message = "Description must be specified")
         String description,
 
         @Min(value = 1, message = "Points required must be greater than zero")

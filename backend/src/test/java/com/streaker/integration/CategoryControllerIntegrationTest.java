@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -39,9 +40,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(TestContainerConfig.class)
 class CategoryControllerIntegrationTest extends BaseIntegrationTest {
 
-    private static final String CATEGORY_USER = "category-user-test";
+    private static final String CATEGORY_USER = "categoryuser";
     private static final String EMAIL = "category@example.com";
-    private static final String PASSWORD = "strongpass";
+    private static final String PASSWORD = "strongPass1";
+    private static final String INTRUDER_USER = "intruder";
+    private static final String INTRUDER_EMAIL = "bad@evil.com";
+    private static final String INTRUDER_PASSWORD = "Password123";
 
     @Autowired
     private MockMvc mockMvc;
@@ -105,6 +109,27 @@ class CategoryControllerIntegrationTest extends BaseIntegrationTest {
                             .content(objectMapper.writeValueAsString(dto)))
                     .andExpect(status().isBadRequest());
         }
+
+        @Test
+        @DisplayName("should return 400 with validation error messages for missing name and color")
+        void shouldFailValidationWithBadInput() throws Exception {
+            // Invalid payload: missing both required fields
+            String invalidJson = """
+                    {
+                        "name": "",
+                        "color": ""
+                    }
+                    """;
+
+            mockMvc.perform(post("/v1/users/{userId}/categories", userId)
+                            .header("Authorization", "Bearer " + jwt)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(invalidJson))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.error").value("Validation Failed"))
+                    .andExpect(jsonPath("$.message", containsString("color: Color must be specified;")));
+        }
     }
 
     @Nested
@@ -124,7 +149,7 @@ class CategoryControllerIntegrationTest extends BaseIntegrationTest {
         @Test
         @DisplayName("should fail with wrong user")
         void shouldFailWithWrongUser() throws Exception {
-            AuthTokensResponse intruder = IntegrationTestUtils.registerAndLogin(mockMvc, objectMapper, "intruder", "bad@evil.com", "password123");
+            AuthTokensResponse intruder = IntegrationTestUtils.registerAndLogin(mockMvc, objectMapper, INTRUDER_USER, INTRUDER_EMAIL, INTRUDER_PASSWORD);
 
             mockMvc.perform(get("/v1/users/{userId}/categories", userId)
                             .header("Authorization", "Bearer " + intruder.accessToken()))
@@ -160,7 +185,7 @@ class CategoryControllerIntegrationTest extends BaseIntegrationTest {
         @DisplayName("should fail with wrong user")
         void shouldFailWithWrongUser() throws Exception {
             Category category = categoryRepository.save(TestDataFactory.createCategory(userRepository.findById(userId).orElseThrow()));
-            AuthTokensResponse intruder = IntegrationTestUtils.registerAndLogin(mockMvc, objectMapper, "intruder", "bad@evil.com", "password123");
+            AuthTokensResponse intruder = IntegrationTestUtils.registerAndLogin(mockMvc, objectMapper, INTRUDER_USER, INTRUDER_EMAIL, INTRUDER_PASSWORD);
 
             mockMvc.perform(get("/v1/users/{userId}/categories/{id}", userId, category.getUuid())
                             .header("Authorization", "Bearer " + intruder.accessToken()))
@@ -187,7 +212,7 @@ class CategoryControllerIntegrationTest extends BaseIntegrationTest {
         @DisplayName("should fail for other user")
         void shouldFailForOtherUser() throws Exception {
             Category category = categoryRepository.save(TestDataFactory.createCategory(userRepository.findById(userId).orElseThrow()));
-            AuthTokensResponse intruder = IntegrationTestUtils.registerAndLogin(mockMvc, objectMapper, "intruder", "bad@evil.com", "password123");
+            AuthTokensResponse intruder = IntegrationTestUtils.registerAndLogin(mockMvc, objectMapper, INTRUDER_USER, INTRUDER_EMAIL, INTRUDER_PASSWORD);
 
             mockMvc.perform(delete("/v1/users/{userId}/categories/{id}", userId, category.getUuid())
                             .header("Authorization", "Bearer " + intruder.accessToken()))

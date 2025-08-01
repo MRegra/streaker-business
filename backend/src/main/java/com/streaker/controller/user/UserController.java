@@ -72,7 +72,7 @@ public class UserController {
     @Operation(summary = "Authenticate and return JWT")
     @CustomRateLimit(limit = 5, windowSeconds = 60)
     @PostMapping("login")
-    public ResponseEntity<LoginUserTokenDto> login(@RequestBody LoginUserDto loginRequest) {
+    public ResponseEntity<LoginUserTokenDto> login(@Valid @RequestBody LoginUserDto loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.username(),

@@ -1,5 +1,6 @@
 package com.streaker.controller.reward;
 
+import com.streaker.config.JwtAuthorizationValidator;
 import com.streaker.controller.reward.dto.RewardRequestDto;
 import com.streaker.controller.reward.dto.RewardResponseDto;
 import com.streaker.service.RewardService;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,21 +29,28 @@ import java.util.UUID;
 @SecurityRequirement(name = "bearerAuth")
 public class RewardController {
 
+    private final JwtAuthorizationValidator jwtAuthorizationValidator;
+
     private final RewardService rewardService;
 
     @Operation(summary = "Create a new reward for a user")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PostMapping
     public ResponseEntity<RewardResponseDto> createReward(
+            @RequestHeader("Authorization") String authHeader,
             @PathVariable UUID userId,
             @Valid @RequestBody RewardRequestDto dto) {
+        jwtAuthorizationValidator.validateToken(authHeader, userId);
         return ResponseEntity.ok(rewardService.createReward(userId, dto));
     }
 
     @Operation(summary = "Get all rewards for a user")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping
-    public ResponseEntity<List<RewardResponseDto>> getRewards(@PathVariable UUID userId) {
+    public ResponseEntity<List<RewardResponseDto>> getRewards(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable UUID userId) {
+        jwtAuthorizationValidator.validateToken(authHeader, userId);
         return ResponseEntity.ok(rewardService.getRewardsByUser(userId));
     }
 
@@ -49,7 +58,10 @@ public class RewardController {
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PostMapping("/{rewardId}/unlock")
     public ResponseEntity<RewardResponseDto> unlockReward(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable UUID userId,
             @PathVariable UUID rewardId) {
+        jwtAuthorizationValidator.validateToken(authHeader, userId);
         return ResponseEntity.ok(rewardService.unlockReward(rewardId));
     }
 }
