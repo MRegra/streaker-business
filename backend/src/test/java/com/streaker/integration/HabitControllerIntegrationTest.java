@@ -137,7 +137,7 @@ class HabitControllerIntegrationTest extends BaseIntegrationTest {
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.status").value(400))
                     .andExpect(jsonPath("$.error").value("Validation Failed"))
-                    .andExpect(jsonPath("$.message", containsString("streakId: Streak ID must be specified;")));
+                    .andExpect(jsonPath("$.message", containsString("streakId: Streak ID must be specified")));
         }
     }
 
