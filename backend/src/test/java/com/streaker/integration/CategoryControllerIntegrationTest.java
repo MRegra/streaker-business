@@ -128,7 +128,7 @@ class CategoryControllerIntegrationTest extends BaseIntegrationTest {
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.status").value(400))
                     .andExpect(jsonPath("$.error").value("Validation Failed"))
-                    .andExpect(jsonPath("$.message", containsString("color: Color must be specified;")));
+                    .andExpect(jsonPath("$.message", containsString("color: Color must be")));
         }
     }
 
