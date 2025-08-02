@@ -30,7 +30,7 @@ jobs:
             @semantic-release/exec
 
       - name: Make bump script executable
-        run: chmod +x .bump-version.sh
+        run: chmod +x infra/scripts/.bump-version.sh
 
       - name: Detect changes and bump accordingly
         run: |
