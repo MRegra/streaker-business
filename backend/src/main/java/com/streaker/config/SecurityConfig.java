@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -26,11 +27,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final Environment environment;
-
     private final JwtAuthFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
 
-    // JwtAuthFilter is assumed to be externally managed and thread-safe.
     @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "JwtAuthFilter is a Spring-managed singleton bean and is not mutated.")
     public SecurityConfig(Environment environment, JwtAuthFilter jwtAuthFilter, UserDetailsService userDetailsService) {
         this.environment = environment;
@@ -41,6 +40,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
+                .headers(headers -> {
+                    headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::deny); // X-Frame-Options: DENY
+                    headers.contentSecurityPolicy(csp -> csp
+                            .policyDirectives("default-src 'self'")
+                    );
+                    if (!isDev()) {
+                        headers.httpStrictTransportSecurity(hsts -> hsts
+                                .includeSubDomains(true)
+                                .maxAgeInSeconds(31536000)
+                        );
+                    }
+                })
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers(HttpMethod.POST, "/api/v1/users/login", "/api/v1/users/register").permitAll();
@@ -69,7 +80,6 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
-
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
