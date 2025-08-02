@@ -1,3 +1,10 @@
+## [2.3.1](https://github.com/MRegra/streaker-business/compare/v2.3.0...v2.3.1) (2025-08-02)
+
+
+### Bug Fixes
+
+* fixing pipeline ([c3ca8f0](https://github.com/MRegra/streaker-business/commit/c3ca8f05e159ce82f5a283f3eee6a8f1b9774416))
+
 # [2.3.0](https://github.com/MRegra/streaker-business/compare/v2.2.0...v2.3.0) (2025-08-02)
 
 
