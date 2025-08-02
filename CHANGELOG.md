@@ -1,3 +1,10 @@
+## [2.3.4](https://github.com/MRegra/streaker-business/compare/v2.3.3...v2.3.4) (2025-08-02)
+
+
+### Bug Fixes
+
+* making the deploy pipeline only manual ([f046803](https://github.com/MRegra/streaker-business/commit/f046803ffb8a994059949a6844001cfb78ba9e59))
+
 ## [2.3.3](https://github.com/MRegra/streaker-business/compare/v2.3.2...v2.3.3) (2025-08-02)
 
 
