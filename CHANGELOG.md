@@ -1,3 +1,25 @@
+# [2.3.0](https://github.com/MRegra/streaker-business/compare/v2.2.0...v2.3.0) (2025-08-02)
+
+
+### Bug Fixes
+
+* adding .mvn for consistency ([eb742a0](https://github.com/MRegra/streaker-business/commit/eb742a05fc4fe71160461eff6112a9b5b71ebb69))
+* Adding Frontend and Backend version files ([e1799cb](https://github.com/MRegra/streaker-business/commit/e1799cb839c09d0687ee5d3d0df8de16fb189e8d))
+* creating tags for frontend and backend specific changes ([0a15af3](https://github.com/MRegra/streaker-business/commit/0a15af36c0de88e1ffc9d842db55ff375de57226))
+* fixing pipeline ([6252346](https://github.com/MRegra/streaker-business/commit/625234649568ee748b29041c2681fdd57fd8e162))
+* fixing pipeline ([9bf9050](https://github.com/MRegra/streaker-business/commit/9bf90508bc69bc72b607b905301e5731d995d36f))
+* fixing pipeline issue ([bdcbcfc](https://github.com/MRegra/streaker-business/commit/bdcbcfc0e2fb7f05215cb28bf465b3e6fb2cfb2c))
+* fixing pipeline issues ([1731cf3](https://github.com/MRegra/streaker-business/commit/1731cf3dc337f06e8b19b15dab96fca0ec4f6c50))
+* Fixing the bump version ([30ae11b](https://github.com/MRegra/streaker-business/commit/30ae11bf600e5c21ca018f472d8f57b114e7c41a))
+* improving the deployment of dhrc images in the pipeline ([583a024](https://github.com/MRegra/streaker-business/commit/583a024635753a3c6807a1ad13e1d8f6835f0809))
+* minor fix ([c855f08](https://github.com/MRegra/streaker-business/commit/c855f0825d710c7a549eb2011d125a1ee10bf94b))
+* minor typo ([b222a12](https://github.com/MRegra/streaker-business/commit/b222a12386907e8c444e2b0d5a9d10f82c2b21d1))
+
+
+### Features
+
+* [[#3](https://github.com/MRegra/streaker-business/issues/3)] - adding frontend dockerfile. adding new dockercompose files, improvbing infra structure, improving automation and pipelines ([#33](https://github.com/MRegra/streaker-business/issues/33)) ([7bba366](https://github.com/MRegra/streaker-business/commit/7bba366a84276ead32e001b8f2b50da20a4357e9))
+
 # [2.2.0](https://github.com/MRegra/streaker-business/compare/v2.1.0...v2.2.0) (2025-08-02)
 
 
