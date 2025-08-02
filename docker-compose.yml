@@ -1,6 +1,7 @@
 services:
-  backend:
-    container_name: streaker-backend
+  backend-prod:
+    image: ghcr.io/mregra/streaker-backend:latest
+    container_name: streaker-backend-prod
     depends_on:
       db:
         condition: service_healthy
@@ -25,19 +26,37 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-
-  backend-prod:
-    extends:
-      service: backend
-    image: ghcr.io/mregra/streaker-backend:latest
     profiles: ["prod"]
 
   backend-local:
-    extends:
-      service: backend
     build:
       context: ./backend
       dockerfile: Dockerfile
+    container_name: streaker-backend-local
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./infra/env/.env
+    healthcheck:
+      test: ["CMD", "curl", "--silent", "--fail", "http://localhost:8080/api/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - streaker-net
+    volumes:
+      - shared-logs:/app/logs
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     profiles: ["local"]
 
   frontend:
@@ -48,7 +67,7 @@ services:
     volumes:
       - frontend-build:/dist
     profiles: ["local", "prod"]
-    
+
   db:
     image: postgres:15
     container_name: streaker-postgres
@@ -121,10 +140,10 @@ services:
     restart: unless-stopped
     profiles: ["local", "prod"]
 
-  caddy:
+  caddy-local:
     build:
       context: ./infra/caddy
-    container_name: streaker-caddy
+    container_name: streaker-caddy-local
     restart: unless-stopped
     ports:
       - "80:80"
@@ -136,12 +155,34 @@ services:
     networks:
       - streaker-net
     depends_on:
-      - backend
+      - backend-local
       - frontend
       - grafana
     env_file:
       - ./infra/env/.env
-    profiles: ["caddy"]
+    profiles: ["local", "caddy"]
+
+  caddy-prod:
+    build:
+      context: ./infra/caddy
+    container_name: streaker-caddy-prod
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - frontend-build:/usr/share/caddy
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - streaker-net
+    depends_on:
+      - backend-prod
+      - frontend
+      - grafana
+    env_file:
+      - ./infra/env/.env
+    profiles: ["prod"]
 
   watchtower:
     image: containrrr/watchtower
@@ -152,7 +193,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ~/.docker/config.json:/config/.dockerconfigjson
-    command: streaker-backend streaker-frontend
+    command: streaker-backend-prod streaker-frontend
     profiles: ["watchtower"]
 
 volumes:
