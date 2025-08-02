@@ -4,8 +4,8 @@ set -e
 
 echo "🔐 Starting full production setup..."
 
-DISCORD_WEBHOOK=${DISCORD_STREAKER_WEBHOOK:-"your-default-fallback"}
-GIT_USERNAME="yourusername"
+DISCORD_WEBHOOK=${DISCORD_STREAKER_WEBHOOK}
+GIT_USERNAME="mregra"
 REPO="streaker"
 
 # === Install base packages ===
@@ -41,4 +41,4 @@ docker compose -f infra/docker-compose.watchtower.yml --env-file infra/.env up -
 # === Launch Caddy + Backend ===
 docker compose -f infra/docker-compose.caddy.yml --profile prod up -d --build
 
-echo "✅ Production setup complete. Visit https://yourdomain.com"
+echo "✅ Production setup complete. Visit https://streaker.com"
