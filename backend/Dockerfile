@@ -11,6 +11,9 @@ RUN chmod +x mvnw
 RUN ./mvnw dependency:go-offline
 
 COPY . .
+
+RUN chmod +x mvnw
+
 RUN ./mvnw clean package -DskipTests && cp target/*.jar target/app.jar
 
 # ----------- Runtime Stage ----------- #
