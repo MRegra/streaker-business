@@ -10,7 +10,7 @@ fi
 
 # Update the pom.xml version tag
 echo "Bumping pom.xml to version $VERSION"
-sed -i "s|<version>.*</version>|<version>$VERSION</version>|" pom.xml
+sed -i "s|<version>.*</version>|<version>$VERSION</version>|" backend/pom.xml
 
 # Save version to VERSION file too
 echo "$VERSION" > VERSION

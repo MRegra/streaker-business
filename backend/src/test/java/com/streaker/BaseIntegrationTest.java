@@ -10,6 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class BaseIntegrationTest {
 
+    protected static final String USER_TEST_USERNAME = "john";
+    protected static final String USER_TEST_EMAIL = "john@example.com";
+    protected static final String PASSWORD = "securePassword1";
+
     @Autowired
     protected HabitRepository habitRepository;
 
