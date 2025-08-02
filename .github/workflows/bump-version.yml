@@ -35,33 +35,20 @@ jobs:
       - name: Detect changes and bump accordingly
         run: |
           git fetch origin main --depth=2
-
-          # Get list of changed files between last commit and one before
           CHANGED_FILES=$(git diff --name-only origin/main~1..origin/main)
           echo "Changed files: $CHANGED_FILES"
 
           HAS_FRONTEND_CHANGES=false
           HAS_BACKEND_CHANGES=false
-          HAS_INFRA_CHANGES=false
 
           for file in $CHANGED_FILES; do
             if [[ $file == frontend/* ]]; then
               HAS_FRONTEND_CHANGES=true
             elif [[ $file == backend/* ]]; then
               HAS_BACKEND_CHANGES=true
-            else
-              HAS_INFRA_CHANGES=true
             fi
           done
 
-          echo "Frontend changes: $HAS_FRONTEND_CHANGES"
-          echo "Backend changes: $HAS_BACKEND_CHANGES"
-          echo "Infra changes: $HAS_INFRA_CHANGES"
-
-          ls -l .releaserc.backend.json || echo "Backend config file missing"
-          ls -l .releaserc.frontend.json || echo "Frontend config file missing"
-          
-          # Run the correct semantic release config
           if [[ "$HAS_FRONTEND_CHANGES" == true ]]; then
             echo "Running frontend semantic-release"
             npx semantic-release --extends .releaserc.frontend.json
@@ -71,5 +58,9 @@ jobs:
             echo "Running backend semantic-release"
             npx semantic-release --extends .releaserc.backend.json
           fi
+
+          # Always run global release last to tag the commit
+          echo "Running global semantic-release"
+          npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
