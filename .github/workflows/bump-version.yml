@@ -1,4 +1,4 @@
-name: Bump Version on Merge
+name: Bump Versions
 
 on:
   push:
@@ -6,37 +6,63 @@ on:
       - main
 
 jobs:
-  semantic-release:
+  detect-and-bump:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # Required to push tags
+      contents: write
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Set up Node
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Install semantic-release and plugins
+      - name: Install semantic-release
         run: |
-          npm install --no-save \
-            semantic-release \
+          npm install --no-save semantic-release \
             @semantic-release/git \
             @semantic-release/commit-analyzer \
             @semantic-release/release-notes-generator \
             @semantic-release/changelog \
             @semantic-release/exec
 
-      - name: Ensure VERSION file exists
-        run: |
-          test -f VERSION || echo "0.1.0" > VERSION
-
-      - name: Make bump-version script executable
+      - name: Make bump script executable
         run: chmod +x .bump-version.sh
 
-      - name: Run semantic-release
+      - name: Detect changes and bump accordingly
+        run: |
+          git fetch origin main --depth=2
+
+          # Get list of changed files between last commit and one before
+          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+          echo "Changed files: $CHANGED_FILES"
+
+          HAS_FRONTEND_CHANGES=false
+          HAS_BACKEND_CHANGES=false
+
+          for file in $CHANGED_FILES; do
+            if [[ $file == frontend/* ]]; then
+              HAS_FRONTEND_CHANGES=true
+            else
+              HAS_BACKEND_CHANGES=true
+            fi
+          done
+
+          echo "Frontend changes: $HAS_FRONTEND_CHANGES"
+          echo "Backend changes: $HAS_BACKEND_CHANGES"
+
+          # Run the correct semantic release config
+          if [[ "$HAS_FRONTEND_CHANGES" == true ]]; then
+            echo "Running frontend semantic-release"
+            npx semantic-release --extends .releaserc.frontend.json
+          fi
+
+          if [[ "$HAS_BACKEND_CHANGES" == true ]]; then
+            echo "Running backend semantic-release"
+            npx semantic-release --extends .releaserc.backend.json
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release

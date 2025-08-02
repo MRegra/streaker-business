@@ -237,8 +237,36 @@ MIT © [MRegra](https://github.com/MRegra)
 
 Full docker clean-up:
 
-    docker compose down -v --remove-orphans && docker system prune -af --volumes && docker compose build --no-cache && docker compose up
-    docker compose down -v --remove-orphans; docker system prune -af --volumes; docker compose build --no-cache; docker compose up
-    docker compose down -v --remove-orphans; docker system prune -af --volumes; docker compose build --no-cache; docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
-    
+    docker compose down -v --remove-orphans && docker system prune -af --volumes && docker compose build --no-cache && docker compose --profile local -f docker-compose.yml up -d
+    docker compose down -v --remove-orphans; docker system prune -af --volumes; docker compose build --no-cache; docker compose --profile local --profile caddy --profile watchtower -f docker-compose.yml up -d
 
+    
+### GHCR (GitHub Container Registry) Setup
+
+    cd backend
+    docker build -t ghcr.io/mregra/streaker-backend:latest .
+
+**For PowerShell:**
+
+    $env:CR_PAT = "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"
+    docker login ghcr.io -u mregra --password $env:CR_PAT
+    docker push ghcr.io/mregra/streaker-backend:latest
+
+**From the VPS**
+
+This one starts the watchtower:
+
+    docker compose -f docker-compose.watchtower.yml up -d
+
+This one starts the newly created backend
+
+    docker run -d --name streaker-backend --restart always ghcr.io/mregra/streaker-backend:latest
+
+### VPS Day-One Bootstrap:
+
+    export CR_PAT=your_ghcr_token
+    export DISCORD_STREAKER_WEBHOOK=https://discord.com/api/webhooks/XXX
+
+    git clone https://github.com/yourusername/streaker.git
+    cd streaker
+    ./infra/deploy.sh

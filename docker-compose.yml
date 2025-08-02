@@ -1,17 +1,15 @@
 services:
   backend:
-    build:
-      context: ./backend
     container_name: streaker-backend
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
-    env_file:
-      - .env
     ports:
       - "8080:8080"
+    env_file:
+      - ./infra/env/.env
     healthcheck:
       test: ["CMD", "curl", "--silent", "--fail", "http://localhost:8080/api/actuator/health"]
       interval: 30s
@@ -28,14 +26,35 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  backend-prod:
+    extends:
+      service: backend
+    image: ghcr.io/mregra/streaker-backend:latest
+    profiles: ["prod"]
+
+  backend-local:
+    extends:
+      service: backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    profiles: ["local"]
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: streaker-frontend
+    volumes:
+      - frontend-build:/dist
+    profiles: ["local", "prod"]
+    
   db:
     image: postgres:15
     container_name: streaker-postgres
     restart: on-failure
-    environment:
-      POSTGRES_DB: streaker
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+    env_file:
+      - ./infra/env/.env
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -46,39 +65,7 @@ services:
       start_period: 15s
     networks:
       - streaker-net
-
-  fluent-bit:
-    image: fluent/fluent-bit:latest
-    container_name: streaker-fluent-bit
-    volumes:
-      - ./logging/fluent-bit/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
-      - ./logging/fluent-bit/parsers.conf:/fluent-bit/etc/parsers.conf
-      - shared-logs:/app/logs
-    depends_on:
-      - loki
-    networks:
-      - streaker-net
-
-  loki:
-    image: grafana/loki:2.9.2
-    container_name: streaker-loki
-    ports:
-      - "3100:3100"
-    command: -config.file=/etc/loki/config.yaml
-    volumes:
-      - ./logging/loki/config.yaml:/etc/loki/config.yaml
-    networks:
-      - streaker-net
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: streaker-grafana
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./logging/grafana/provisioning:/etc/grafana/provisioning
-    networks:
-      - streaker-net
+    profiles: ["local", "prod"]
 
   redis:
     image: redis:7.4
@@ -93,10 +80,89 @@ services:
     networks:
       - streaker-net
     restart: unless-stopped
+    profiles: ["local", "prod"]
+
+  fluent-bit:
+    image: fluent/fluent-bit:latest
+    container_name: streaker-fluent-bit
+    volumes:
+      - ./infra/logging/fluent-bit:/fluent-bit/etc
+      - shared-logs:/app/logs
+    depends_on:
+      - loki
+    networks:
+      - streaker-net
+    profiles: ["local", "prod"]
+
+  loki:
+    image: grafana/loki:2.9.2
+    container_name: streaker-loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/config.yaml
+    volumes:
+      - ./infra/logging/loki/config.yaml:/etc/loki/config.yaml
+    networks:
+      - streaker-net
+    profiles: ["local", "prod"]
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: streaker-grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./infra/logging/grafana/provisioning:/etc/grafana/provisioning
+      - grafana-data:/var/lib/grafana
+    env_file:
+      - ./infra/env/.env
+    networks:
+      - streaker-net
+    restart: unless-stopped
+    profiles: ["local", "prod"]
+
+  caddy:
+    build:
+      context: ./infra/caddy
+    container_name: streaker-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - frontend-build:/usr/share/caddy
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - streaker-net
+    depends_on:
+      - backend
+      - frontend
+      - grafana
+    env_file:
+      - ./infra/env/.env
+    profiles: ["caddy"]
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    restart: always
+    env_file:
+      - ./infra/env/.env
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ~/.docker/config.json:/config/.dockerconfigjson
+    command: streaker-backend streaker-frontend
+    profiles: ["watchtower"]
 
 volumes:
   pgdata:
   shared-logs:
+  caddy_data:
+  caddy_config:
+  frontend-build:
+  grafana-data:
 
 networks:
   streaker-net:
+    driver: bridge

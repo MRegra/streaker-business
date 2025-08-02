@@ -1,5 +1,10 @@
-target/
-.idea/
-*.iml
-*.log
-*.md
+backend/target/
+backend/.idea/
+backend/*.iml
+backend/*.log
+backend/*.md
+
+frontend/node_modules
+frontend/dist
+frontend/.git
+frontend/.env
