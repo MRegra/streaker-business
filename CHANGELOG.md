@@ -1,3 +1,10 @@
+## [2.3.2](https://github.com/MRegra/streaker-business/compare/v2.3.1...v2.3.2) (2025-08-02)
+
+
+### Bug Fixes
+
+* Fixing token ([49d7e1e](https://github.com/MRegra/streaker-business/commit/49d7e1eda07a3e1e5d3773f311f5abdfe86c21c8))
+
 ## [2.3.1](https://github.com/MRegra/streaker-business/compare/v2.3.0...v2.3.1) (2025-08-02)
 
 
