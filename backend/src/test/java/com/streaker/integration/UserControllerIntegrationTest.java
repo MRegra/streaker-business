@@ -35,10 +35,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(TestContainerConfig.class)
 public class UserControllerIntegrationTest extends BaseIntegrationTest {
 
-    private static final String USERNAME = "john";
-    private static final String EMAIL = "john@example.com";
-    private static final String PASSWORD = "securePassword1";
-
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -52,9 +48,9 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     @BeforeEach
     void setup() throws Exception {
         cleanDatabase();
-        AuthTokensResponse tokens = IntegrationTestUtils.registerAndLogin(mockMvc, objectMapper, USERNAME, EMAIL, PASSWORD);
+        AuthTokensResponse tokens = IntegrationTestUtils.registerAndLogin(mockMvc, objectMapper, USER_TEST_USERNAME, USER_TEST_EMAIL, PASSWORD);
         this.jwt = tokens.accessToken();
-        this.userId = userRepository.findByEmail(EMAIL).orElseThrow().getUuid();
+        this.userId = userRepository.findByEmail(USER_TEST_EMAIL).orElseThrow().getUuid();
     }
 
     @Test
@@ -62,7 +58,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     void createUser_shouldPersistAndReturnUser() {
         List<User> users = userRepository.findAll();
         assertThat(users).hasSize(1);
-        assertThat(users.getFirst().getEmail()).isEqualTo(EMAIL);
+        assertThat(users.getFirst().getEmail()).isEqualTo(USER_TEST_EMAIL);
     }
 
     @Nested
@@ -75,8 +71,8 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
             mockMvc.perform(get("/v1/users/{id}", userId)
                             .header("Authorization", "Bearer " + jwt))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.username").value(USERNAME))
-                    .andExpect(jsonPath("$.email").value(EMAIL));
+                    .andExpect(jsonPath("$.username").value(USER_TEST_USERNAME))
+                    .andExpect(jsonPath("$.email").value(USER_TEST_EMAIL));
         }
 
         @Test
