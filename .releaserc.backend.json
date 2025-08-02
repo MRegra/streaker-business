@@ -1,0 +1,25 @@
+{
+  "branches": ["main"],
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    [
+      "@semantic-release/changelog",
+      { "changelogFile": "CHANGELOG.md" }
+    ],
+    [
+      "@semantic-release/exec",
+      {
+        "prepareCmd": "./.bump-version.sh ${nextRelease.version} backend"
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": ["backend/pom.xml", "VERSION_BACKEND", "CHANGELOG.md"],
+        "message": "chore(backend): release ${nextRelease.version} [skip ci]"
+      }
+    ]
+  ],
+  "ci": false
+}

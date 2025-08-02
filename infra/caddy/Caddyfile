@@ -1,0 +1,33 @@
+{$DOMAIN:-localhost} {
+
+    # Reverse proxy for API
+    @api path /api/*
+    reverse_proxy @api streaker-backend:8080
+
+    # Reverse proxy for Grafana
+    @grafana path /grafana/*
+    handle @grafana {
+        uri strip_prefix /grafana
+        reverse_proxy streaker-grafana:3000
+    }
+
+    # Serve static files (Angular app)
+    root * /usr/share/caddy/browser
+    file_server
+    encode gzip
+    try_files {path} /index.html
+
+    # Security headers
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+
+    # TLS only outside localhost
+    @use_tls not host localhost
+    tls {
+        on_demand
+    }
+}
