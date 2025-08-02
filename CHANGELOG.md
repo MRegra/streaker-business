@@ -1,3 +1,10 @@
+# [2.2.0](https://github.com/MRegra/streaker-business/compare/v2.1.0...v2.2.0) (2025-08-02)
+
+
+### Features
+
+* [[#9](https://github.com/MRegra/streaker-business/issues/9)] - Use Spring Security headers (X-Content-Type-Options, etc.) ([#31](https://github.com/MRegra/streaker-business/issues/31)) ([18cdfe3](https://github.com/MRegra/streaker-business/commit/18cdfe335493753f4d24881884684b852d8c5fff))
+
 # [2.1.0](https://github.com/MRegra/streaker-business/compare/v2.0.1...v2.1.0) (2025-08-01)
 
 
