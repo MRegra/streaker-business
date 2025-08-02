@@ -10,7 +10,7 @@
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "./.bump-version.sh ${nextRelease.version} backend"
+        "prepareCmd": "./infra/scripts/.bump-version.sh ${nextRelease.version} backend"
       }
     ],
     [
