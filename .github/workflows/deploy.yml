@@ -94,11 +94,12 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
 
       - name: Upload tar.gz to VPS
-        uses: appleboy/scp-action@v1.0.0
+        uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
+          port: ${{ vars.SSH_PORT }}
           source: "deploy.tar.gz"
           target: "~/streaker"
 
