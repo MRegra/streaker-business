@@ -1,0 +1,234 @@
+name: Full Pipeline (CI → Version Bump → GHCR → Deploy Staging)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  # CI + Test
+  ci:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: ${{ vars.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
+      SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
+      SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Build, Lint & Test Backend
+        working-directory: ./backend
+        run: mvn clean verify
+
+      - name: Generate JaCoCo Report
+        working-directory: ./backend
+        run: mvn jacoco:report
+
+      - name: Upload Codecov Report
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ./backend/target/site/jacoco
+          flags: backend
+          name: codecov-backend-report
+          fail_ci_if_error: true
+
+  # Semantic Version Bump
+  version-bump:
+    needs: ci
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install semantic-release
+        run: |
+          npm install --no-save semantic-release \
+            @semantic-release/git \
+            @semantic-release/commit-analyzer \
+            @semantic-release/release-notes-generator \
+            @semantic-release/changelog \
+            @semantic-release/exec
+
+      - name: Make bump script executable
+        run: chmod +x infra/scripts/.bump-version.sh
+
+      - name: Bump versions based on changes
+        run: |
+          git fetch origin main --depth=2
+          CHANGED_FILES=$(git diff --name-only origin/main~1..origin/main)
+          echo "Changed files: $CHANGED_FILES"
+
+          HAS_FRONTEND_CHANGES=false
+          HAS_BACKEND_CHANGES=false
+
+          for file in $CHANGED_FILES; do
+            if [[ $file == frontend/* ]]; then
+              HAS_FRONTEND_CHANGES=true
+            elif [[ $file == backend/* ]]; then
+              HAS_BACKEND_CHANGES=true
+            fi
+          done
+
+          if [[ "$HAS_FRONTEND_CHANGES" == true ]]; then
+            echo "Running frontend semantic-release"
+            npx semantic-release --extends .releaserc.frontend.json
+          fi
+
+          if [[ "$HAS_BACKEND_CHANGES" == true ]]; then
+            echo "Running backend semantic-release"
+            npx semantic-release --extends .releaserc.backend.json
+          fi
+
+          echo "Running global semantic-release"
+          npx semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Sync main → staging
+  sync-main-to-staging:
+    needs: version-bump
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v3
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Force push main → staging
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}
+          git push origin main:staging --force
+
+  # Build & Push All Images to GHCR
+  push-to-ghcr:
+    needs: sync-main-to-staging
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - id: get_versions
+        run: |
+          echo "VERSION_TAG_BACKEND=$(cat VERSION_BACKEND)" >> $GITHUB_ENV
+          echo "VERSION_TAG_FRONTEND=$(cat VERSION_FRONTEND)" >> $GITHUB_ENV
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.CR_PAT }}
+
+      - name: Push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ghcr.io/mregra/streaker-backend:latest
+            ghcr.io/mregra/streaker-backend:${{ env.VERSION_TAG_BACKEND }}
+
+      - name: Push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ghcr.io/mregra/streaker-frontend:latest
+            ghcr.io/mregra/streaker-frontend:${{ env.VERSION_TAG_FRONTEND }}
+
+      - name: Push caddy image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./infra/caddy
+          push: true
+          tags: ghcr.io/mregra/streaker-caddy-prod:latest
+
+  # Deploy to Staging Server
+  deploy-staging:
+    needs: push-to-ghcr
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: staging
+
+      - name: Package files
+        run: |
+          mkdir deploy_package
+          cp docker-compose.yml deploy_package/
+          cp -r infra deploy_package/
+          tar -czf deploy.tar.gz deploy_package
+
+      - name: Upload to staging
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST_STAGING }}
+          username: ${{ secrets.SSH_USER_STAGING }}
+          key: ${{ secrets.SSH_KEY_STAGING }}
+          source: "deploy.tar.gz"
+          target: "~/streaker"
+
+      - name: SSH Deploy
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST_STAGING }}
+          username: ${{ secrets.SSH_USER_STAGING }}
+          key: ${{ secrets.SSH_KEY_STAGING }}
+          envs: CR_PAT,DISCORD_STREAKER_WEBHOOK
+          script: |
+            cd ~/streaker
+            tar -xzf deploy.tar.gz
+            cd deploy_package
+            export CR_PAT="${{ secrets.CR_PAT }}"
+            export DISCORD_STREAKER_WEBHOOK="${{ secrets.DISCORD_STREAKER_WEBHOOK }}"
+            bash ./infra/deploy.sh
