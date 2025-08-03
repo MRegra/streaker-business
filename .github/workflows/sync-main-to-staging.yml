@@ -5,11 +5,14 @@ on:
     workflows: ["Bump Versions"]
     types:
       - completed
+    
+permissions:
+  contents: write  # Required to push to the repo
 
 jobs:
   sync-staging:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout main
         uses: actions/checkout@v3
@@ -21,7 +24,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
       - name: Force push main to staging
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
