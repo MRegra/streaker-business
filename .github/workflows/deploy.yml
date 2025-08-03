@@ -87,6 +87,11 @@ jobs:
           cp -r infra deploy_package/
           tar -czf deploy.tar.gz deploy_package
 
+      - name: Fix SSH key permissions
+        run: |
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
       - name: Upload tar.gz to VPS
         uses: appleboy/scp-action@v0.1.4
         with:
