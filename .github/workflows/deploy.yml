@@ -80,16 +80,23 @@ jobs:
           echo "Present working directory: $(pwd)"
           ls -al
 
-      - name: Copy deploy files to VPS
+      - name: Create deployment archive
+        run: |
+          mkdir deploy_package
+          cp docker-compose.yml deploy_package/
+          cp -r infra deploy_package/
+          tar -czf deploy.tar.gz deploy_package
+
+      - name: Upload tar.gz to VPS
         uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          source: "./infra/**/* ./docker-compose.yml"
-          target: ~/streaker
+          source: "deploy.tar.gz"
+          target: "~/streaker"
 
-      - name: Deploy via SSH
+      - name: Extract and deploy on VPS
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -98,6 +105,9 @@ jobs:
           envs: CR_PAT,DISCORD_STREAKER_WEBHOOK
           script: |
             cd ~/streaker
+            tar -xzf deploy.tar.gz
+            cd deploy_package
             export CR_PAT="${{ secrets.CR_PAT }}"
             export DISCORD_STREAKER_WEBHOOK="${{ secrets.DISCORD_STREAKER_WEBHOOK }}"
             bash ./infra/scripts/deploy.sh
+
