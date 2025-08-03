@@ -20,8 +20,8 @@ for var in "${REQUIRED_VARS[@]}"; do
 done
 
 # === Create .env file ===
-mkdir -p infra
-cat <<EOF > infra/.env
+mkdir -p infra/env
+cat <<EOF > infra/env/.env
 SPRING_DATASOURCE_URL=$SPRING_DATASOURCE_URL
 SPRING_DATASOURCE_USERNAME=$SPRING_DATASOURCE_USERNAME
 SPRING_DATASOURCE_PASSWORD=$SPRING_DATASOURCE_PASSWORD
