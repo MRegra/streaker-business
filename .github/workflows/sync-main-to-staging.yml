@@ -1,17 +1,15 @@
 name: Sync main to staging
 
 on:
-  push:
-    branches:
-      - main
-
-permissions:
-  contents: write  # Required to push to the repo
+  workflow_run:
+    workflows: ["Bump Versions"]
+    types:
+      - completed
 
 jobs:
   sync-staging:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout main
         uses: actions/checkout@v3

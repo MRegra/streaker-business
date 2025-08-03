@@ -1,7 +1,7 @@
 services:
   backend-prod:
     image: ghcr.io/mregra/streaker-backend:latest
-    container_name: streaker-backend-prod
+    container_name: streaker-backend
     depends_on:
       db:
         condition: service_healthy
@@ -32,7 +32,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: streaker-backend-local
+    container_name: streaker-backend
     depends_on:
       db:
         condition: service_healthy
@@ -59,14 +59,23 @@ services:
         max-file: "3"
     profiles: ["local"]
 
-  frontend:
+  frontend-local:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: streaker-frontend
     volumes:
       - frontend-build:/dist
-    profiles: ["local", "prod"]
+    networks:
+      - streaker-net
+    profiles: ["local"]
+
+  frontend-prod:
+    image: ghcr.io/mregra/streaker-frontend:latest
+    container_name: streaker-frontend
+    networks:
+      - streaker-net
+    profiles: ["prod"]
 
   db:
     image: postgres:15
@@ -143,7 +152,7 @@ services:
   caddy-local:
     build:
       context: ./infra/caddy
-    container_name: streaker-caddy-local
+    container_name: streaker-caddy
     restart: unless-stopped
     ports:
       - "80:80"
@@ -156,29 +165,27 @@ services:
       - streaker-net
     depends_on:
       - backend-local
-      - frontend
+      - frontend-local
       - grafana
     env_file:
       - ./infra/env/.env
-    profiles: ["local", "caddy"]
+    profiles: ["local"]
 
   caddy-prod:
-    build:
-      context: ./infra/caddy
-    container_name: streaker-caddy-prod
+    image: ghcr.io/mregra/streaker-caddy-prod:latest
+    container_name: streaker-caddy
     restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - frontend-build:/usr/share/caddy
       - caddy_data:/data
       - caddy_config:/config
     networks:
       - streaker-net
     depends_on:
       - backend-prod
-      - frontend
+      - frontend-prod
       - grafana
     env_file:
       - ./infra/env/.env
@@ -193,7 +200,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ~/.docker/config.json:/config/.dockerconfigjson
-    command: streaker-backend-prod streaker-frontend
+    command: streaker-backend streaker-frontend
     profiles: ["watchtower"]
 
 volumes:

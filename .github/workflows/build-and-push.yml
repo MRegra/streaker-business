@@ -1,0 +1,53 @@
+name: Build and Push to GHCR
+
+on:
+  workflow_run:
+    workflows: ["Sync main to staging"]
+    types:
+      - completed
+
+jobs:
+  push-to-ghcr:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - id: get_version
+        run: |
+          echo "VERSION_TAG_BACKEND=$(cat VERSION_BACKEND)" >> $GITHUB_ENV
+          echo "VERSION_TAG_FRONTEND=$(cat VERSION_FRONTEND)" >> $GITHUB_ENV
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.CR_PAT }}
+
+      - uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ghcr.io/mregra/streaker-backend:latest
+            ghcr.io/mregra/streaker-backend:${{ env.VERSION_TAG_BACKEND }}
+
+      - uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ghcr.io/mregra/streaker-frontend:latest
+            ghcr.io/mregra/streaker-frontend:${{ env.VERSION_TAG_FRONTEND }}
+
+      - uses: docker/build-push-action@v5
+        with:
+          context: ./infra/caddy
+          push: true
+          tags: ghcr.io/mregra/streaker-caddy-prod:latest

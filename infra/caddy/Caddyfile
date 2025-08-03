@@ -1,33 +1,67 @@
-{$DOMAIN:-localhost} {
+{
+    # Optional: global settings
+    email marregsil97@gmail.com
+    auto_https disable_redirects
+    servers {
+        protocols h1 h2 h2c
+    }
+}
 
-    # Reverse proxy for API
-    @api path /api/*
-    reverse_proxy @api streaker-backend:8080
+# 🔒 Production domain (HTTPS enabled automatically)
+streaker.com, www.streaker.com {
 
-    # Reverse proxy for Grafana
-    @grafana path /grafana/*
-    handle @grafana {
-        uri strip_prefix /grafana
+    # 📊 Proxy /grafana/*
+    handle /grafana/* {
         reverse_proxy streaker-grafana:3000
     }
 
-    # Serve static files (Angular app)
-    root * /usr/share/caddy/browser
-    file_server
-    encode gzip
-    try_files {path} /index.html
+    # ⚙️ Proxy /api/*
+    handle /api/* {
+        reverse_proxy streaker-backend:8080
+    }
 
-    # Security headers
+    # 🌐 Serve Angular frontend for all other routes
+    handle {
+        root * /usr/share/caddy/browser
+        try_files {path} /index.html
+        file_server
+        encode gzip
+    }
+
+    # 🛡 Security headers
     header {
-        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
         X-Content-Type-Options "nosniff"
         X-Frame-Options "DENY"
         Referrer-Policy "strict-origin-when-cross-origin"
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    }
+}
+
+# 🌐 Localhost (HTTP only, no HTTPS)
+http://localhost {
+
+    # 📊 Proxy /grafana/*
+    handle /grafana/* {
+        reverse_proxy streaker-grafana:3000
     }
 
-    # TLS only outside localhost
-    @use_tls not host localhost
-    tls {
-        on_demand
+    # ⚙️ Proxy /api/*
+    handle /api/* {
+        reverse_proxy streaker-backend:8080
+    }
+
+    # 🌐 Serve Angular frontend for all other routes
+    handle {
+        root * /usr/share/caddy/browser
+        try_files {path} /index.html
+        file_server
+        encode gzip
+    }
+
+    # 🛡 Security headers
+    header {
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "strict-origin-when-cross-origin"
     }
 }

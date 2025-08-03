@@ -1,0 +1,44 @@
+name: Deploy to Staging
+
+on:
+  workflow_run:
+    workflows: ["Build and Push to GHCR"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: staging
+
+      - run: |
+          mkdir deploy_package
+          cp docker-compose.yml deploy_package/
+          cp -r infra deploy_package/
+          tar -czf deploy.tar.gz deploy_package
+
+      - uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST_STAGING }}
+          username: ${{ secrets.SSH_USER_STAGING }}
+          key: ${{ secrets.SSH_KEY_STAGING }}
+          source: "deploy.tar.gz"
+          target: "~/streaker"
+
+      - uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST_STAGING }}
+          username: ${{ secrets.SSH_USER_STAGING }}
+          key: ${{ secrets.SSH_KEY_STAGING }}
+          envs: CR_PAT,DISCORD_STREAKER_WEBHOOK
+          script: |
+            cd ~/streaker
+            tar -xzf deploy.tar.gz
+            cd deploy_package
+            export CR_PAT="${{ secrets.CR_PAT }}"
+            export DISCORD_STREAKER_WEBHOOK="${{ secrets.DISCORD_STREAKER_WEBHOOK }}"
+            bash ./infra/deploy.sh
