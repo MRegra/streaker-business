@@ -55,6 +55,6 @@ sed -i 's/#\?PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_
 # Optional: sed -i 's/#Port 22/Port 2222/' /etc/ssh/sshd_config
 # Optional: ufw allow 2222/tcp && ufw delete allow OpenSSH
 
-systemctl reload sshd
+systemctl restart ssh
 
 echo "✅ Provisioning complete. Server hardened and ready for deploy."

@@ -87,12 +87,6 @@ jobs:
           cp -r infra deploy_package/
           tar -czf deploy.tar.gz deploy_package
 
-      - name: Fix SSH key permissions
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-
       - name: Upload tar.gz to VPS
         uses: appleboy/scp-action@v1
         with:
@@ -114,7 +108,22 @@ jobs:
             cd ~/streaker
             tar -xzf deploy.tar.gz
             cd deploy_package
-            export CR_PAT="${{ secrets.CR_PAT }}"
+            export SPRING_DATASOURCE_URL="${{ secrets.SPRING_DATASOURCE_URL }}"
+            export SPRING_DATASOURCE_USERNAME="${{ secrets.SPRING_DATASOURCE_USERNAME }}"
+            export SPRING_DATASOURCE_PASSWORD="${{ secrets.SPRING_DATASOURCE_PASSWORD }}"
+            export ADMIN_USERNAME="${{ secrets.ADMIN_USERNAME }}"
+            export ADMIN_EMAIL="${{ secrets.ADMIN_EMAIL }}"
+            export ADMIN_PASSWORD="${{ secrets.ADMIN_PASSWORD }}"
+            export POSTGRES_DB="${{ vars.POSTGRES_DB }}"
+            export POSTGRES_USER="${{ secrets.POSTGRES_USER }}"
+            export POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}"
+            export VALID_ORIGIN_ENDPOINT="${{ vars.VALID_ORIGIN_ENDPOINT }}"
             export DISCORD_STREAKER_WEBHOOK="${{ secrets.DISCORD_STREAKER_WEBHOOK }}"
+            export DOMAIN="${{ vars.DOMAIN }}"
+            export GF_SECURITY_ADMIN_USER="${{ secrets.GF_SECURITY_ADMIN_USER }}"
+            export GF_SECURITY_ADMIN_PASSWORD="${{ secrets.GF_SECURITY_ADMIN_PASSWORD }}"
+            export CR_PAT="${{ secrets.CR_PAT }}"
+            export GIT_USERNAME="mregra"
+            
             bash ./infra/scripts/deploy.sh
 
