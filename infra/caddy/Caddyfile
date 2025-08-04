@@ -4,7 +4,6 @@
     servers {
         protocols h1 h2 h2c
     }
-    auto_https on
 }
 
 # Explicit HTTP support for Lets Encrypt HTTP challenge
