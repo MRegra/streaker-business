@@ -223,6 +223,7 @@ jobs:
           envs: CR_PAT,DISCORD_STREAKER_WEBHOOK
           script: |
             cd ~/streaker
+            rm -rf deploy_package/
             tar -xzf deploy.tar.gz
             cd deploy_package
             export SPRING_DATASOURCE_URL="${{ secrets.SPRING_DATASOURCE_URL }}"

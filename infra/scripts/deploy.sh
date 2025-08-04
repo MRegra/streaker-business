@@ -59,6 +59,7 @@ echo "$CR_PAT" | docker login ghcr.io -u "$GIT_USERNAME" --password-stdin || tru
 docker network create streaker-net || true
 docker compose down -v --remove-orphans || true
 docker system prune -af --volumes || true
+docker compose pull
 docker compose build --no-cache
 docker compose --profile prod --profile watchtower -f docker-compose.yml up -d
 
