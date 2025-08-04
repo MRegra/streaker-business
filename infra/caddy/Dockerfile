@@ -10,4 +10,4 @@ RUN ng build --configuration=production
 # Final Caddy image
 FROM caddy:alpine
 COPY infra/caddy/Caddyfile /etc/caddy/Caddyfile
-COPY --from=build-frontend /app/dist/* /usr/share/caddy/browser/
+COPY --from=build-frontend /app/dist/* /usr/share/caddy
