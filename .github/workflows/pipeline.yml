@@ -204,15 +204,6 @@ jobs:
           cp -r infra deploy_package/
           tar -czf deploy.tar.gz deploy_package
 
-      - name: Clean up old deploy.tar.gz
-        uses: appleboy/ssh-action@v1.2.2
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            rm -f ~/streaker/deploy.tar.gz
-
       - name: Upload tar.gz to staging VPS
         uses: appleboy/scp-action@v1
         with:
@@ -251,6 +242,7 @@ jobs:
             export GF_SECURITY_ADMIN_USER="${{ secrets.GF_SECURITY_ADMIN_USER }}"
             export GF_SECURITY_ADMIN_PASSWORD="${{ secrets.GF_SECURITY_ADMIN_PASSWORD }}"
             export CR_PAT="${{ secrets.CR_PAT }}"
+            export SPRING_PROFILES_ACTIVE="${{ vars.SPRING_PROFILES_ACTIVE }}"
             export GIT_USERNAME="mregra"
             
             bash ./infra/scripts/deploy.sh
