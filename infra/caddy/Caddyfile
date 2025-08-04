@@ -1,7 +1,6 @@
 {
     # Optional: global settings
     email marregsil97@gmail.com
-    auto_https disable_redirects
     servers {
         protocols h1 h2 h2c
     }
