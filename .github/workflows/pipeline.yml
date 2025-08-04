@@ -213,9 +213,10 @@ jobs:
           port: ${{ vars.SSH_PORT }}
           source: "deploy.tar.gz"
           target: "~/streaker"
+          overwrite: true
 
       - name: Extract and deploy on VPS
-        uses: appleboy/ssh-action@v1.0.0
+        uses: appleboy/ssh-action@v1.2.2
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
