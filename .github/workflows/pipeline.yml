@@ -234,7 +234,6 @@ jobs:
           script: |
             echo "===== Starting the script now ====="
             cd ~/streaker
-            rm -rf deploy_package/
             tar -xzf deploy.tar.gz
             cd deploy_package
             export SPRING_DATASOURCE_URL="${{ secrets.SPRING_DATASOURCE_URL }}"
