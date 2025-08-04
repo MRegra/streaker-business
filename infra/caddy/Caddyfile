@@ -8,7 +8,7 @@
 }
 
 # 🔒 Production domain (HTTPS enabled automatically)
-streaker.com, www.streaker.com {
+streakmastery.com, www.streakmastery.com {
 
     # 📊 Proxy /grafana/*
     handle /grafana/* {
