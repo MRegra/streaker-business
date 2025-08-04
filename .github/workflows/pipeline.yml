@@ -223,6 +223,7 @@ jobs:
           source: "deploy.tar.gz"
           target: "~/streaker"
           overwrite: true
+          debug: true
 
       - name: Extract and deploy on VPS
         uses: appleboy/ssh-action@v1.2.2
