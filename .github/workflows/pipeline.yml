@@ -179,19 +179,10 @@ jobs:
             ghcr.io/mregra/streaker-backend:latest
             ghcr.io/mregra/streaker-backend:${{ env.VERSION_TAG_BACKEND }}
 
-      - name: Push frontend image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./frontend
-          push: true
-          tags: |
-            ghcr.io/mregra/streaker-frontend:latest
-            ghcr.io/mregra/streaker-frontend:${{ env.VERSION_TAG_FRONTEND }}
-
       - name: Push caddy image
         uses: docker/build-push-action@v5
         with:
-          context: ./infra/caddy
+          context: .
           push: true
           tags: ghcr.io/mregra/streaker-caddy-prod:latest
 
