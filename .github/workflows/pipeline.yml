@@ -204,6 +204,15 @@ jobs:
           cp -r infra deploy_package/
           tar -czf deploy.tar.gz deploy_package
 
+      - name: Clean up old deploy.tar.gz
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            rm -f ~/streaker/deploy.tar.gz
+
       - name: Upload tar.gz to staging VPS
         uses: appleboy/scp-action@v1
         with:
@@ -223,6 +232,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           envs: CR_PAT,DISCORD_STREAKER_WEBHOOK
           script: |
+            echo "===== Starting the script now ====="
             cd ~/streaker
             rm -rf deploy_package/
             tar -xzf deploy.tar.gz
