@@ -6,6 +6,12 @@
     }
 }
 
+
+# Explicit HTTP support for Let's Encrypt HTTP challenge
+http://streakmastery.com, http://www.streakmastery.com {
+    redir https://{host}{uri}
+}
+
 # 🔒 Production domain (HTTPS enabled automatically)
 streakmastery.com, www.streakmastery.com {
 
