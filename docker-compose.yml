@@ -70,13 +70,6 @@ services:
       - streaker-net
     profiles: ["local"]
 
-  frontend-prod:
-    image: ghcr.io/mregra/streaker-frontend:latest
-    container_name: streaker-frontend
-    networks:
-      - streaker-net
-    profiles: ["prod"]
-
   db:
     image: postgres:15
     container_name: streaker-postgres
@@ -185,7 +178,6 @@ services:
       - streaker-net
     depends_on:
       - backend-prod
-      - frontend-prod
       - grafana
     env_file:
       - ./infra/env/.env
@@ -200,7 +192,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ~/.docker/config.json:/config/.dockerconfigjson
-    command: streaker-backend streaker-frontend
+    command: streaker-backend streaker-caddy
     profiles: ["watchtower"]
 
 volumes:
