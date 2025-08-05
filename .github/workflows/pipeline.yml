@@ -213,53 +213,6 @@ jobs:
           push: true
           tags: ghcr.io/mregra/streaker-caddy-prod:latest
 
-      # After pushing images
-      - name: 🐳 Show built Docker images
-        run: docker images | grep streaker || echo "No streaker images found!"
-
-      - name: ✅ Verify backend and caddy images exist on GHCR
-        run: |
-          echo "Fetching GHCR tags for backend..."
-          BACKEND_TAGS_JSON=$(curl -s -u "${{ github.actor }}:${{ secrets.CR_PAT }}" \
-            https://ghcr.io/v2/mregra/streaker-backend/tags/list)
-
-          echo "$BACKEND_TAGS_JSON" | jq || echo "❌ Failed to parse backend tags JSON"
-
-          echo "Fetching GHCR tags for caddy..."
-          CADDY_TAGS_JSON=$(curl -s -u "${{ github.actor }}:${{ secrets.CR_PAT }}" \
-            https://ghcr.io/v2/mregra/streaker-caddy-prod/tags/list)
-
-          echo "$CADDY_TAGS_JSON" | jq || echo "❌ Failed to parse caddy tags JSON"
-
-          echo ""
-          echo "🔍 Checking for required backend tags..."
-          MISSING=0
-
-          for TAG in "latest" "${VERSION_TAG_BACKEND}"; do
-            echo "Looking for backend tag: $TAG"
-            echo "$BACKEND_TAGS_JSON" | jq -e ".tags | index(\"$TAG\")" > /dev/null || {
-              echo "❌ Backend tag '$TAG' not found!"
-              MISSING=1
-            }
-          done
-
-          echo ""
-          echo "🔍 Checking for required caddy tag: latest"
-          echo "$CADDY_TAGS_JSON" | jq -e '.tags | index("latest")' > /dev/null || {
-            echo "❌ Caddy tag 'latest' not found!"
-            MISSING=1
-          }
-
-          if [ "$MISSING" -ne 0 ]; then
-            echo "🚨 One or more required tags are missing. Failing job."
-            exit 1
-          else
-            echo "✅ All required tags are present on GHCR."
-          fi
-        env:
-          VERSION_TAG_BACKEND: ${{ env.VERSION_TAG_BACKEND }}
-          CR_PAT: ${{ secrets.CR_PAT }}
-
   # Deploy to Staging Server
   deploy-staging:
     needs: push-to-ghcr
