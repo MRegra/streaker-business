@@ -1,3 +1,10 @@
+## [2.4.3](https://github.com/MRegra/streaker-business/compare/v2.4.2...v2.4.3) (2025-08-05)
+
+
+### Bug Fixes
+
+* issue with the names? ([3dfbb86](https://github.com/MRegra/streaker-business/commit/3dfbb86a2d4b79923a31b45c185110f181512224))
+
 ## [2.4.2](https://github.com/MRegra/streaker-business/compare/v2.4.1...v2.4.2) (2025-08-05)
 
 
