@@ -32,7 +32,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: streaker-backend
+    container_name: streaker-backend-local
     depends_on:
       db:
         condition: service_healthy
@@ -145,7 +145,7 @@ services:
   caddy-local:
     build:
       context: ./infra/caddy
-    container_name: streaker-caddy
+    container_name: streaker-caddy-local
     restart: unless-stopped
     ports:
       - "80:80"
