@@ -74,6 +74,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -90,6 +92,13 @@ jobs:
 
       - name: Make bump script executable
         run: chmod +x infra/scripts/.bump-version.sh
+
+      - name: Debug file existence
+        run: |
+          echo "Listing root files:"
+          ls -la
+          echo "Does backend config exist?"
+          test -f .releaserc.backend.json && echo "✅ Found .releaserc.backend.json" || echo "❌ Not found"
 
       - name: Bump versions based on changes
         run: |
