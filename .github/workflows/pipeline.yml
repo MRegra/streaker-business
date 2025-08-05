@@ -118,7 +118,7 @@ jobs:
         if: steps.detect.outputs.backend == 'true'
         run: |
           echo "Running semantic-release for backend"
-          npx semantic-release --extends .releaserc.backend.json --debug
+          npx semantic-release --extends file:.releaserc.backend.json --debug
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -126,7 +126,7 @@ jobs:
         if: steps.detect.outputs.frontend == 'true'
         run: |
           echo "Running semantic-release for frontend"
-          npx semantic-release --extends .releaserc.frontend.json --debug
+          npx semantic-release --extends file:.releaserc.frontend.json --debug
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
