@@ -1,7 +1,10 @@
 # 🧠 Streaker Backend
 
-[![Coverage](https://codecov.io/gh/MRegra/streaker-business/branch/main/graph/badge.svg)](https://codecov.io/gh/MRegra/streaker-business)  ![Build](https://github.com/MRegra/streaker-business/actions/workflows/ci.yml/badge.svg)  ![GitHub release (latest by date)](https://img.shields.io/github/v/release/MRegra/streaker-business)
+[![Coverage](https://codecov.io/gh/MRegra/streaker-business/branch/main/graph/badge.svg)](https://codecov.io/gh/MRegra/streaker-business)  ![Build](https://github.com/MRegra/streaker-business/actions/workflows/ci.yml/badge.svg)  ![GitHub release (latest by date)](https://img.shields.io/github/v/release/MRegra/streaker-business) 
 
+### Versions
+
+![Backend Version](https://img.shields.io/github/v/tag/MRegra/streaker-business?label=backend&sort=semver&tag=backend-v) ![Frontend Version](https://img.shields.io/github/v/tag/MRegra/streaker-business?label=frontend&sort=semver&tag=frontend-v) ![Global Version](https://img.shields.io/github/v/tag/MRegra/streaker-business?label=global&sort=semver&tag=v)
 
 
 Streaker is a habit-tracking backend designed for real-world use. Built with Java 21 and Spring Boot 3, it supports JWT authentication, Docker-based deployments, and structured logging — making it suitable for production-grade environments and DevOps experimentation.

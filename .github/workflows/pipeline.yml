@@ -90,45 +90,47 @@ jobs:
             @semantic-release/changelog \
             @semantic-release/exec
 
-      - name: Make bump script executable
-        run: chmod +x infra/scripts/.bump-version.sh
+      - name: Fetch last 2 commits
+        run: git fetch origin main --depth=2
 
-      - name: Debug file existence
+      - name: Detect changed paths
+        id: detect
         run: |
-          echo "Listing root files:"
-          ls -la
-          echo "Does backend config exist?"
-          test -f .releaserc.backend.json && echo "✅ Found .releaserc.backend.json" || echo "❌ Not found"
-
-      - name: Bump versions based on changes
-        run: |
-          git fetch origin main --depth=2
           CHANGED_FILES=$(git diff --name-only origin/main~1..origin/main)
-          echo "Changed files: $CHANGED_FILES"
-
-          HAS_FRONTEND_CHANGES=false
-          HAS_BACKEND_CHANGES=false
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+          
+          echo "frontend=false" >> $GITHUB_OUTPUT
+          echo "backend=false" >> $GITHUB_OUTPUT
 
           for file in $CHANGED_FILES; do
-            if [[ $file == frontend/* ]]; then
-              HAS_FRONTEND_CHANGES=true
-            elif [[ $file == backend/* ]]; then
-              HAS_BACKEND_CHANGES=true
+            if [[ "$file" == frontend/* ]]; then
+              echo "frontend=true" >> $GITHUB_OUTPUT
+            elif [[ "$file" == backend/* ]]; then
+              echo "backend=true" >> $GITHUB_OUTPUT
             fi
           done
 
-          if [[ "$HAS_FRONTEND_CHANGES" == true ]]; then
-            echo "Running frontend semantic-release"
-            npx semantic-release --extends .releaserc.frontend.json
-          fi
+      - name: Bump backend version
+        if: steps.detect.outputs.backend == 'true'
+        run: |
+          echo "Running semantic-release for backend"
+          npx semantic-release --extends .releaserc.backend.json --debug
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-          if [[ "$HAS_BACKEND_CHANGES" == true ]]; then
-            echo "Running backend semantic-release"
-            npx semantic-release --extends .releaserc.backend.json
-          fi
+      - name: Bump frontend version
+        if: steps.detect.outputs.frontend == 'true'
+        run: |
+          echo "Running semantic-release for frontend"
+          npx semantic-release --extends .releaserc.frontend.json --debug
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-          echo "Running global semantic-release"
-          npx semantic-release
+      - name: Bump global version
+        run: |
+          echo "Running semantic-release for global"
+          npx semantic-release --extends .releaserc.json --debug
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
