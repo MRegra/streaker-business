@@ -1,3 +1,10 @@
+## [2.4.2](https://github.com/MRegra/streaker-business/compare/v2.4.1...v2.4.2) (2025-08-05)
+
+
+### Bug Fixes
+
+* (bump version) ([20fc397](https://github.com/MRegra/streaker-business/commit/20fc3973b48d286066a5821810b41d791f151f36))
+
 ## [1.0.2](https://github.com/MRegra/streaker-business/compare/backend-v1.0.1...backend-v1.0.2) (2025-08-05)
 
 
