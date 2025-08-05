@@ -1,3 +1,22 @@
+## [2.4.1](https://github.com/MRegra/streaker-business/compare/v2.4.0...v2.4.1) (2025-08-05)
+
+
+### Bug Fixes
+
+* (backend) ([4fff9b5](https://github.com/MRegra/streaker-business/commit/4fff9b5a78fd6fbd42c128b30a71b07c6b06053b))
+* (backend) pom.xml was wrongly changes by bump version script ([b3a84a3](https://github.com/MRegra/streaker-business/commit/b3a84a3007f6e4f376ae4e38feefa285886f4b95))
+* backend pipeline bump version ([856c03f](https://github.com/MRegra/streaker-business/commit/856c03f936a761faac1876462a7774e4323e0232))
+* **backend:** is this the reason? ([d8071ec](https://github.com/MRegra/streaker-business/commit/d8071ec4d6fa1ff867c30f0c38eef524418a50cc))
+
+## [1.0.1](https://github.com/MRegra/streaker-business/compare/backend-v1.0.0...backend-v1.0.1) (2025-08-05)
+
+
+### Bug Fixes
+
+* (backend) ([4fff9b5](https://github.com/MRegra/streaker-business/commit/4fff9b5a78fd6fbd42c128b30a71b07c6b06053b))
+* (backend) pom.xml was wrongly changes by bump version script ([b3a84a3](https://github.com/MRegra/streaker-business/commit/b3a84a3007f6e4f376ae4e38feefa285886f4b95))
+* backend pipeline bump version ([856c03f](https://github.com/MRegra/streaker-business/commit/856c03f936a761faac1876462a7774e4323e0232))
+
 # 1.0.0 (2025-08-05)
 
 
