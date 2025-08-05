@@ -1,3 +1,16 @@
+# [2.4.0](https://github.com/MRegra/streaker-business/compare/v2.3.5...v2.4.0) (2025-08-05)
+
+
+### Bug Fixes
+
+* forgot to add the chomd +x to the bump version script ([e135f7a](https://github.com/MRegra/streaker-business/commit/e135f7ad7d9d05bbe9f295ff96b42d1fc7ae6b0c))
+* **pipeline:** fix header bug ([787fbf7](https://github.com/MRegra/streaker-business/commit/787fbf74e260d69281b5159389069a8379778457))
+
+
+### Features
+
+* **backend:** new login flow ([e8db049](https://github.com/MRegra/streaker-business/commit/e8db049a8441ba90e770413086b9f65f6069eeb1))
+
 ## [2.3.5](https://github.com/MRegra/streaker-business/compare/v2.3.4...v2.3.5) (2025-08-03)
 
 
