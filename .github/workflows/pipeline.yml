@@ -213,6 +213,32 @@ jobs:
           push: true
           tags: ghcr.io/mregra/streaker-caddy-prod:latest
 
+      - name: ✅ Verify backend tags exist on GHCR
+        run: |
+          echo "Fetching GHCR tags..."
+          TAGS_JSON=$(curl -s -u "mregra:${{ secrets.CR_PAT }}" \
+            https://ghcr.io/v2/mregra/streaker-backend/tags/list)
+
+          echo "$TAGS_JSON" | jq
+
+          echo "Checking for required tags..."
+          MISSING=0
+
+          for TAG in "latest" "${VERSION_TAG_BACKEND}"; do
+            echo "Looking for tag: $TAG"
+            echo "$TAGS_JSON" | jq -e ".tags | index(\"$TAG\")" > /dev/null || {
+              echo "❌ Tag '$TAG' not found!"
+              MISSING=1
+            }
+          done
+
+          if [ "$MISSING" -ne 0 ]; then
+            echo "🚨 One or more required tags are missing. Failing job."
+            exit 1
+          else
+            echo "✅ All required tags are present."
+          fi
+          
   # Deploy to Staging Server
   deploy-staging:
     needs: push-to-ghcr
