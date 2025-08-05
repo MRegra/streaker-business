@@ -118,7 +118,9 @@ jobs:
         if: steps.detect.outputs.backend == 'true'
         run: |
           echo "Running semantic-release for backend"
-          npx semantic-release --extends file:.releaserc.backend.json --debug
+          mv .releaserc.backend.json .releaserc.json
+          npx semantic-release --debug
+          mv .releaserc.json .releaserc.backend.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -126,14 +128,18 @@ jobs:
         if: steps.detect.outputs.frontend == 'true'
         run: |
           echo "Running semantic-release for frontend"
-          npx semantic-release --extends file:.releaserc.frontend.json --debug
+          mv .releaserc.frontend.json .releaserc.json
+          npx semantic-release --debug
+          mv .releaserc.json .releaserc.frontend.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Bump global version
         run: |
           echo "Running semantic-release for global"
+          mv .releaserc.global.json .releaserc.json
           npx semantic-release --debug
+          mv .releaserc.json .releaserc.global.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Show bumped version
