@@ -92,7 +92,7 @@ jobs:
 
       - name: Make bump script executable
         run: chmod +x infra/scripts/.bump-version.sh
-        
+
       - name: Fetch last 2 commits
         run: git fetch origin main --depth=2
 
@@ -136,6 +136,12 @@ jobs:
           npx semantic-release --debug
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Show bumped version
+        run: |
+          ls -la
+          cat VERSION_BACKEND || echo "VERSION_BACKEND missing"
+          grep '<version>' backend/pom.xml || echo "Version tag missing from pom.xml"
+
 
   # Sync main → staging
   sync-main-to-staging:
