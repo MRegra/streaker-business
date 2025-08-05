@@ -26,7 +26,7 @@ COPY --from=builder /build/target/app.jar app.jar
 EXPOSE 8080
 
 # Set JVM options
-ENV JAVA_OPTS="-Xms256m -Xmx512m"
+ENV JAVA_OPTS="-Xms256m -Xmx512m -Dlogging.level.root=DEBUG -Dlogging.level.org.springframework.web=TRACE"
 
 # Use shell form for entrypoint (allows variable expansion)
 CMD java $JAVA_OPTS -jar app.jar
