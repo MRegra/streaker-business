@@ -11,12 +11,24 @@ fi
 
 if [[ "$COMPONENT" == "backend" ]]; then
   echo "Bumping backend version to $VERSION"
-  if [[ -f backend/pom.xml ]]; then
-    sed -i "s|<version>.*</version>|<version>$VERSION</version>|" backend/pom.xml
+  POM_FILE="backend/pom.xml"
+
+  if [[ -f $POM_FILE ]]; then
+    awk -v new_version="$VERSION" '
+    BEGIN { found_group = 0; found_artifact = 0; replaced = 0 }
+    /<groupId>com<\/groupId>/ { found_group = 1 }
+    /<artifactId>streaker<\/artifactId>/ { if (found_group) found_artifact = 1 }
+    found_group && found_artifact && /<version>.*<\/version>/ && !replaced {
+      sub(/<version>.*<\/version>/, "<version>" new_version "</version>")
+      replaced = 1
+    }
+    { print }
+    ' "$POM_FILE" > "$POM_FILE.tmp" && mv "$POM_FILE.tmp" "$POM_FILE"
   else
-    echo "ERROR: backend/pom.xml not found!"
+    echo "ERROR: $POM_FILE not found!"
     exit 1
   fi
+
   echo "$VERSION" > VERSION_BACKEND
 
 elif [[ "$COMPONENT" == "frontend" ]]; then
