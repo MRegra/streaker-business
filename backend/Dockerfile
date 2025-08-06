@@ -34,5 +34,9 @@ EXPOSE 8080
 # Set JVM options
 ENV JAVA_OPTS="-Xms256m -Xmx512m -Dlogging.level.root=DEBUG -Dlogging.level.org.springframework.web=TRACE"
 
+# Add healthcheck
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD curl -f http://localhost:8080/actuator/health || exit 1
+  
 # Use shell form for entrypoint (allows variable expansion)
 CMD java $JAVA_OPTS -jar app.jar
