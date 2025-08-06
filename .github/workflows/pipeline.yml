@@ -174,7 +174,7 @@ jobs:
 
   # Deploy to Staging Server
   deploy-staging:
-    needs: push-to-ghcr
+    needs: sync-main-to-staging
     runs-on: ubuntu-latest
 
     steps:
