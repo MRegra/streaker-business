@@ -30,7 +30,7 @@ jobs:
           --health-retries 5
 
     env:
-      SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
+      SPRING_DATASOURCE_URL: ${{ vars.SPRING_DATASOURCE_URL }}
       SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
       SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
 
@@ -227,7 +227,6 @@ jobs:
         run: |
           mkdir deploy_package
           cp docker-compose.yml deploy_package/
-          cp -r backend deploy_package/
           cp -r infra deploy_package/
           tar -czf deploy.tar.gz deploy_package
 
@@ -254,7 +253,7 @@ jobs:
             cd ~/streaker
             tar -xzf deploy.tar.gz
             cd deploy_package
-            export SPRING_DATASOURCE_URL="${{ secrets.SPRING_DATASOURCE_URL }}"
+            export SPRING_DATASOURCE_URL="${{ vars.SPRING_DATASOURCE_URL }}"
             export SPRING_DATASOURCE_USERNAME="${{ secrets.SPRING_DATASOURCE_USERNAME }}"
             export SPRING_DATASOURCE_PASSWORD="${{ secrets.SPRING_DATASOURCE_PASSWORD }}"
             export ADMIN_USERNAME="${{ secrets.ADMIN_USERNAME }}"

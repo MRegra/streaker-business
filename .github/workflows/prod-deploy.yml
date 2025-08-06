@@ -45,7 +45,7 @@ jobs:
             cd ~/streaker
             tar -xzf deploy.tar.gz
             cd deploy_package
-            export SPRING_DATASOURCE_URL="${{ secrets.SPRING_DATASOURCE_URL }}"
+            export SPRING_DATASOURCE_URL="${{ vars.SPRING_DATASOURCE_URL }}"
             export SPRING_DATASOURCE_USERNAME="${{ secrets.SPRING_DATASOURCE_USERNAME }}"
             export SPRING_DATASOURCE_PASSWORD="${{ secrets.SPRING_DATASOURCE_PASSWORD }}"
             export ADMIN_USERNAME="${{ secrets.ADMIN_USERNAME }}"
