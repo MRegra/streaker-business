@@ -3,8 +3,6 @@ name: Full Pipeline (CI → Version Bump → GHCR → Deploy Staging)
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
   workflow_dispatch:
 
 permissions:
@@ -147,7 +145,6 @@ jobs:
           ls -la
           cat VERSION_BACKEND || echo "VERSION_BACKEND missing"
           grep '<version>' backend/pom.xml || echo "Version tag missing from pom.xml"
-
 
   # Sync main → staging
   sync-main-to-staging:

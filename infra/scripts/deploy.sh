@@ -63,10 +63,36 @@ docker compose pull
 docker compose build --no-cache
 docker compose --profile prod --profile watchtower -f docker-compose.yml up -d
 
-# === Notify Discord ===
+# === Get Deployed Versions ===
+VERSION_BACKEND=$(cat VERSION_BACKEND 2>/dev/null || echo "N/A")
+VERSION_FRONTEND=$(cat VERSION_FRONTEND 2>/dev/null || echo "N/A")
+VERSION_GLOBAL=$(cat VERSION_GLOBAL 2>/dev/null || echo "N/A")
+
+# === Get Image Digests ===
+DIGEST_BACKEND=$(docker image inspect ghcr.io/mregra/streaker-backend:latest --format='{{index .RepoDigests 0}}' 2>/dev/null || echo "N/A")
+DIGEST_CADDY=$(docker image inspect ghcr.io/mregra/streaker-caddy-prod:latest --format='{{index .RepoDigests 0}}' 2>/dev/null || echo "N/A")
+
+# === Format Discord Message ===
+DISCORD_MESSAGE=$(cat <<EOF
+**✅ Streaker Deployment Complete**
+🗓️ **Date**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+🌐 **Environment**: \`staging\`
+
+**🔢 Versions Deployed:**
+- Backend: \`${VERSION_BACKEND}\`
+- Frontend: \`${VERSION_FRONTEND}\`
+- Global: \`${VERSION_GLOBAL}\`
+
+**📦 Docker Images Pushed:**
+- \`${DIGEST_BACKEND}\`
+- \`${DIGEST_CADDY}\`
+EOF
+)
+
+# === Notify Discord with Rich Info ===
 curl -H "Content-Type: application/json" \
      -X POST \
-     -d "{\"content\": \"✅ Streaker production deployed successfully.\"}" \
+     -d "$(jq -nc --arg content "$DISCORD_MESSAGE" '{content: $content}')" \
      "$DISCORD_STREAKER_WEBHOOK" || echo "⚠️ Discord notification failed."
 
-echo "✅ Deployment complete."
+echo "✅ Deployment & Notification complete."
