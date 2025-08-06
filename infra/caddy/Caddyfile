@@ -14,6 +14,20 @@ http://streakmastery.com, http://www.streakmastery.com {
 # 🔒 Production domain (HTTPS enabled automatically)
 streakmastery.com, www.streakmastery.com {
 
+    # ✅ Rate limit applied to all requests
+    @rateLimited {
+        rate_limit {
+            zone global
+            key {remote_ip}
+            events 20
+            window 1s
+        }
+    }
+
+    handle @rateLimited {
+        respond "Too Many Requests" 429
+    }
+
     # 📊 Proxy /grafana/*
     handle_path /grafana/* {
         reverse_proxy streaker-grafana:3000
@@ -38,6 +52,16 @@ streakmastery.com, www.streakmastery.com {
         X-Frame-Options "DENY"
         Referrer-Policy "strict-origin-when-cross-origin"
         Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    }
+
+    # 📄 Access Logging
+    log {
+        output file /var/log/caddy/access.log {
+            roll_size 10mb
+            roll_keep 5
+            roll_keep_for 48h
+        }
+        level info
     }
 }
 

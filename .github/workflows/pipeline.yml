@@ -63,9 +63,64 @@ jobs:
           name: codecov-backend-report
           fail_ci_if_error: true
 
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: ci
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend image (without pushing)
+        run: |
+          docker build -t streaker-backend:scan ./backend
+
+      - name: Scan backend Docker image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: streaker-backend:scan
+          format: table
+          exit-code: 1
+          severity: CRITICAL,HIGH
+
+      - name: Scan backend filesystem with Trivy (SCA)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: ./backend
+          severity: CRITICAL,HIGH
+          exit-code: 1
+
+      - name: Scan frontend filesystem with Trivy (SCA)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: ./frontend
+          severity: CRITICAL,HIGH
+          exit-code: 1
+
+      - name: Scan Dockerfiles and Compose (IaC)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: config
+          scan-ref: .
+          exit-code: 1
+
+      - name: Semgrep SAST scan (Java + Angular)
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: auto  # Or use 'p/java' and 'p/angular' for stricter rules
+
+      - name: Run Gitleaks (Secret detection)
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          config-path: .gitleaks.toml  # Optional — customize or remove
+
   # Semantic Version Bump
   version-bump:
-    needs: ci
+    needs: security-scan
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -192,7 +247,8 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.CR_PAT }}
-
+      - name: Generate SHA Tag
+        run: echo "GIT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
       - name: Push backend image
         uses: docker/build-push-action@v5
         with:
@@ -201,6 +257,7 @@ jobs:
           tags: |
             ghcr.io/mregra/streaker-backend:latest
             ghcr.io/mregra/streaker-backend:${{ env.VERSION_TAG_BACKEND }}
+            ghcr.io/mregra/streaker-backend:${{ env.GIT_SHA }}
 
       - name: Push caddy image
         uses: docker/build-push-action@v5
