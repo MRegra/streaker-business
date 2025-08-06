@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/MRegra/streaker-business/compare/backend-v1.0.3...backend-v1.0.4) (2025-08-06)
+
+
+### Bug Fixes
+
+* (ops) reverse proxy wrong for backend ([0e3a5ce](https://github.com/MRegra/streaker-business/commit/0e3a5ce573f68c2550b0743b632650105beb6deb))
+
 ## [1.0.3](https://github.com/MRegra/streaker-business/compare/backend-v1.0.2...backend-v1.0.3) (2025-08-05)
 
 
