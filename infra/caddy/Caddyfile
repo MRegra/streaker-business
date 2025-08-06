@@ -20,7 +20,7 @@ streakmastery.com, www.streakmastery.com {
     }
 
     # ⚙️ Proxy /api/*
-    handle_path /api/* {
+    handle /api/* {
         reverse_proxy streaker-backend:8080
     }
 
