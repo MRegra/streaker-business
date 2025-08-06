@@ -1,3 +1,11 @@
+## [1.0.3](https://github.com/MRegra/streaker-business/compare/backend-v1.0.2...backend-v1.0.3) (2025-08-05)
+
+
+### Bug Fixes
+
+* fixing pipeline ([2b8a165](https://github.com/MRegra/streaker-business/commit/2b8a1659df80a2166b7faab7697af53888b106e6))
+* issue with the names? ([3dfbb86](https://github.com/MRegra/streaker-business/commit/3dfbb86a2d4b79923a31b45c185110f181512224))
+
 ## [2.4.4](https://github.com/MRegra/streaker-business/compare/v2.4.3...v2.4.4) (2025-08-05)
 
 
