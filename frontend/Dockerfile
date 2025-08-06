@@ -9,10 +9,21 @@ COPY . .
 RUN npm install -g @angular/cli
 RUN ng build --configuration=production
 
-# Just keep build output
-FROM alpine:latest
-WORKDIR /dist
-COPY --from=builder /app/dist/streaker .
+# --- Final Image (Static content only) ---
+FROM alpine:3.22.1
 
-# No need to run anything — just makes files available
+# Create a non-root user and group
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+WORKDIR /dist
+
+# Copy built files and give ownership to the non-root user
+COPY --from=builder /app/dist/streaker ./
+RUN chown -R appuser:appgroup /dist
+
+# Switch to non-root user
+USER appuser
+
+HEALTHCHECK CMD ["true"]
+
 CMD ["sh", "-c", "echo Frontend build complete"]
