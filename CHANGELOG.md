@@ -1,3 +1,10 @@
+## [2.4.6](https://github.com/MRegra/streaker-business/compare/v2.4.5...v2.4.6) (2025-08-06)
+
+
+### Bug Fixes
+
+* sending disc message with latest deployed versions ([0d057d0](https://github.com/MRegra/streaker-business/commit/0d057d0e913180e6a1ae5a73af84c331950465cf))
+
 ## [1.0.5](https://github.com/MRegra/streaker-business/compare/backend-v1.0.4...backend-v1.0.5) (2025-08-06)
 
 
