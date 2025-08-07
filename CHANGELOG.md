@@ -1,3 +1,11 @@
+## [2.4.8](https://github.com/MRegra/streaker-business/compare/v2.4.7...v2.4.8) (2025-08-07)
+
+
+### Bug Fixes
+
+* fix this issue ([90754c2](https://github.com/MRegra/streaker-business/commit/90754c242fb30db3c9aff3f3da1885a69d18a53f))
+* fixing caddy image ([059da9f](https://github.com/MRegra/streaker-business/commit/059da9f01ae585fe59dd6f608d0f18000fda2d50))
+
 ## [2.4.7](https://github.com/MRegra/streaker-business/compare/v2.4.6...v2.4.7) (2025-08-07)
 
 
