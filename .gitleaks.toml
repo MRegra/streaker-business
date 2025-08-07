@@ -1,0 +1,33 @@
+title = "Streaker Business Gitleaks Configuration"
+
+# Define rules for secret scanning
+[[rules]]
+id = "generic-api-key"
+description = "Generic API Key"
+regex = '''(?i)(api_key|api-token|secret|token|password)[\s:=]+['"]?[a-z0-9_\-]{20,}['"]?'''
+entropy = 3.0
+allowlist = [
+  # Ignore matches in test and docs files
+  '''backend/src/test/.*''',
+  '''docs/.*''',
+  '''infra/env/.*\.template''',
+  '''.*README.md''',
+]
+
+[[rules]]
+id = "github-pat"
+description = "GitHub Personal Access Token"
+regex = '''ghp_[A-Za-z0-9_]{36}'''
+allowlist = [
+  '''backend/src/test/.*''',
+  '''docs/.*''',
+  '''infra/env/.*\.template''',
+]
+
+[[rules]]
+id = "curl-auth-header"
+description = "Curl Authorization Header"
+regex = '''Authorization:.*'''
+allowlist = [
+  '''docs/.*''',
+]
