@@ -1,3 +1,11 @@
+## [2.4.10](https://github.com/MRegra/streaker-business/compare/v2.4.9...v2.4.10) (2025-08-07)
+
+
+### Bug Fixes
+
+* git leaks issue ([2f12226](https://github.com/MRegra/streaker-business/commit/2f12226298f63d85989460844eb0edbddf2de1f6))
+* no permissions for caddy logs ([99fbcba](https://github.com/MRegra/streaker-business/commit/99fbcbab0f75320542949c27ee470a3378291efe))
+
 ## [2.4.9](https://github.com/MRegra/streaker-business/compare/v2.4.8...v2.4.9) (2025-08-07)
 
 
