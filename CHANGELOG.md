@@ -1,3 +1,12 @@
+## [2.4.9](https://github.com/MRegra/streaker-business/compare/v2.4.8...v2.4.9) (2025-08-07)
+
+
+### Bug Fixes
+
+* fixing caddy's dockerfile ([3323451](https://github.com/MRegra/streaker-business/commit/33234519c9d390d797c6989750a2d4f7f5ab76ef))
+* issues with alpine image ([d29c5bc](https://github.com/MRegra/streaker-business/commit/d29c5bc052eb9e86eaf6a351f112ff7032eab540))
+* rolling back rate_limiting on caddy ([9d87a91](https://github.com/MRegra/streaker-business/commit/9d87a9152281626998961ac9086940ba5c903480))
+
 ## [2.4.8](https://github.com/MRegra/streaker-business/compare/v2.4.7...v2.4.8) (2025-08-07)
 
 
