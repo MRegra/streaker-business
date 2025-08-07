@@ -1,3 +1,24 @@
+## [2.4.7](https://github.com/MRegra/streaker-business/compare/v2.4.6...v2.4.7) (2025-08-07)
+
+
+### Bug Fixes
+
+* adding readme to ignore list ([156ea5c](https://github.com/MRegra/streaker-business/commit/156ea5cc8c0a8a10128e023f0edb0e6013e9f1a3))
+* adding security scanniny and rate_limit ([2cf0925](https://github.com/MRegra/streaker-business/commit/2cf0925c3412fb30ce91b80b24ebc8136623143d))
+* fixing caddy logs ([6ae9739](https://github.com/MRegra/streaker-business/commit/6ae9739b229717427bebbe5221da5b309acfdcb7))
+* fixing caddy logs on grafana ([b89747f](https://github.com/MRegra/streaker-business/commit/b89747f6b890a2b22024ed6f8b9b79a133955eec))
+* fixing secuirty vulnerabilities on dockerfile frontend ([2c6b73c](https://github.com/MRegra/streaker-business/commit/2c6b73c907690e9bc2019e4efd42858b834ca4a5))
+* fixing security vulnerabilities in the dockerfile backend ([3884f26](https://github.com/MRegra/streaker-business/commit/3884f268e4b159b142498ea2da3cdcd8d68a506a))
+* fixing the pipeline ([21b501e](https://github.com/MRegra/streaker-business/commit/21b501e8e0f03debe8a648d7e670eeedb5a0f610))
+* fixing vulnerabilities for dockerfile caddy ([587a949](https://github.com/MRegra/streaker-business/commit/587a9494766cd31dc33e41410c97e068750f5cc9))
+* fixing vulnerability in Dockerfile backend ([76cadf9](https://github.com/MRegra/streaker-business/commit/76cadf95ad4d94a7c07b563a56b925cb6073b4a1))
+* removing .env.template from sast scan ([37e7b10](https://github.com/MRegra/streaker-business/commit/37e7b103c646120a95b66c7a372957868d66fb36))
+* removing .env.template from security scan ([0768f31](https://github.com/MRegra/streaker-business/commit/0768f318ce65a4c53b117b550272dd03e5098f46))
+* removing files from gitleaks as it is not a leak ([d4c8888](https://github.com/MRegra/streaker-business/commit/d4c88886bc81bde4bb86f856c7685ec7045ead1c))
+* removing jwt secret sample value ([441c27d](https://github.com/MRegra/streaker-business/commit/441c27d24870aff802ab54214d555b8a9cfe7a4e))
+* removing secret from application.properties, now it is a secret ([d9ca06b](https://github.com/MRegra/streaker-business/commit/d9ca06bd617584846dad0fd78596f52c561bd8ef))
+* testing again ([244e2f8](https://github.com/MRegra/streaker-business/commit/244e2f851ab366f0afc89ae61fb73975bc81d395))
+
 ## [2.4.6](https://github.com/MRegra/streaker-business/compare/v2.4.5...v2.4.6) (2025-08-06)
 
 
