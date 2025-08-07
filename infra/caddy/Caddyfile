@@ -11,30 +11,20 @@ http://streakmastery.com, http://www.streakmastery.com {
 
 streakmastery.com, www.streakmastery.com {
 
-    route {
-        ratelimit {
-            zone global {
-                duration 1s
-                events 20
-            }
-            key {http.request.remote.host}
-            block_duration 10m
+        @grafana {
+            path /grafana/*
         }
+        reverse_proxy @grafana streaker-grafana:3000
 
-        handle_path /grafana/* {
-            reverse_proxy streaker-grafana:3000
+        @api {
+            path /api/*
         }
+        reverse_proxy @api streaker-backend:8080
 
-        handle /api/* {
-            reverse_proxy streaker-backend:8080
-        }
-
-        handle {
-            root * /usr/share/caddy/browser
-            try_files {path} /index.html
-            file_server
-            encode gzip
-        }
+        root * /usr/share/caddy
+        try_files {path} /index.html
+        file_server
+        encode gzip
 
         header {
             X-Content-Type-Options "nosniff"
@@ -52,7 +42,6 @@ streakmastery.com, www.streakmastery.com {
             }
             level info
         }
-    }
 }
 
 http://localhost {
