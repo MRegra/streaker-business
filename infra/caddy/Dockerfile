@@ -8,7 +8,7 @@ RUN npm install -g @angular/cli
 RUN ng build --configuration=production
 
 # Final Caddy image (use official image with built-in Caddy)
-FROM caddy:2.7.4-alpine
+FROM alpine:3.22.1
 
 RUN apk add --no-cache bash wget
 
