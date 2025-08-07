@@ -11,49 +11,47 @@ http://streakmastery.com, http://www.streakmastery.com {
 
 streakmastery.com, www.streakmastery.com {
 
-    @rateLimited {
-        rate_limit {
-            zone global
-            key {remote_ip}
-            events 20
-            window 1s
+    route {
+        ratelimit {
+            zone global {
+                duration 1s
+                events 20
+            }
+            key {http.request.remote.host}
+            block_duration 10m
         }
-    }
 
-    handle @rateLimited {
-        respond "Too Many Requests" 429
-    }
-
-    handle_path /grafana/* {
-        reverse_proxy streaker-grafana:3000
-    }
-
-    handle /api/* {
-        reverse_proxy streaker-backend:8080
-    }
-
-    handle {
-        root * /usr/share/caddy/browser
-        try_files {path} /index.html
-        file_server
-        encode gzip
-    }
-
-    header {
-        X-Content-Type-Options "nosniff"
-        X-Frame-Options "DENY"
-        Referrer-Policy "strict-origin-when-cross-origin"
-        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-    }
-
-    log {
-        format json
-        output file /var/log/caddy/access.log {
-            roll_size 10mb
-            roll_keep 5
-            roll_keep_for 48h
+        handle_path /grafana/* {
+            reverse_proxy streaker-grafana:3000
         }
-        level info
+
+        handle /api/* {
+            reverse_proxy streaker-backend:8080
+        }
+
+        handle {
+            root * /usr/share/caddy/browser
+            try_files {path} /index.html
+            file_server
+            encode gzip
+        }
+
+        header {
+            X-Content-Type-Options "nosniff"
+            X-Frame-Options "DENY"
+            Referrer-Policy "strict-origin-when-cross-origin"
+            Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        }
+
+        log {
+            format json
+            output file /var/log/caddy/access.log {
+                roll_size 10mb
+                roll_keep 5
+                roll_keep_for 48h
+            }
+            level info
+        }
     }
 }
 

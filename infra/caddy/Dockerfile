@@ -1,7 +1,6 @@
-# Step 1: Build custom Caddy with latest rate limiting plugin
+# Step 1: Build custom Caddy with RussellLuo's ratelimit plugin
 FROM caddy:builder AS builder
-RUN xcaddy build \
-    --with github.com/caddyserver/ratelimit
+RUN xcaddy build --with github.com/RussellLuo/caddy-ext/ratelimit
 
 # Step 2: Build Angular app
 FROM node:20-alpine AS build-frontend
@@ -23,19 +22,14 @@ COPY --from=builder /usr/bin/caddy /usr/bin/caddy
 COPY --from=build-frontend /app/dist/* /usr/share/caddy
 COPY infra/caddy/Caddyfile /etc/caddy/Caddyfile
 
-# Create non-root user and group
 RUN addgroup -S caddygroup && adduser -S caddyuser -G caddygroup
 
-# Change ownership so caddyuser can access necessary files
 RUN chown -R caddyuser:caddygroup /usr/share/caddy /etc/caddy /var/log/caddy
 
-# Switch to non-root user
 USER caddyuser
 
-# Expose HTTP and HTTPS ports
 EXPOSE 80 443
 
-# Add healthcheck to verify Caddy serving on port 80
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD wget --spider http://localhost:80 || exit 1
 
