@@ -1,7 +1,7 @@
-# Step 1: Build custom Caddy with rate limiting plugin
+# Step 1: Build custom Caddy with latest rate limiting plugin
 FROM caddy:builder AS builder
 RUN xcaddy build \
-    --with github.com/mholt/caddy-ratelimit
+    --with github.com/caddyserver/ratelimit
 
 # Step 2: Build Angular app
 FROM node:20-alpine AS build-frontend
@@ -13,7 +13,9 @@ RUN npm install -g @angular/cli
 RUN ng build --configuration=production
 
 # Step 3: Final Caddy image
-FROM alpine:3.20
+FROM alpine:3.22.1
+
+RUN apk add --no-cache wget bash
 
 RUN mkdir -p /usr/share/caddy /etc/caddy /var/log/caddy
 
@@ -30,10 +32,10 @@ RUN chown -R caddyuser:caddygroup /usr/share/caddy /etc/caddy /var/log/caddy
 # Switch to non-root user
 USER caddyuser
 
-# Expose ports
+# Expose HTTP and HTTPS ports
 EXPOSE 80 443
 
-# Add healthcheck to verify Caddy is serving on port 80
+# Add healthcheck to verify Caddy serving on port 80
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD wget --spider http://localhost:80 || exit 1
 

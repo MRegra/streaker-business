@@ -1,20 +1,16 @@
 {
-    # Optional: global settings
     email marregsil97@gmail.com
     servers {
         protocols h1 h2 h2c
     }
 }
 
-# Explicit HTTP support for Lets Encrypt HTTP challenge
 http://streakmastery.com, http://www.streakmastery.com {
     redir https://{host}{uri}
 }
 
-# 🔒 Production domain (HTTPS enabled automatically)
 streakmastery.com, www.streakmastery.com {
 
-    # ✅ Rate limit applied to all requests
     @rateLimited {
         rate_limit {
             zone global
@@ -28,17 +24,14 @@ streakmastery.com, www.streakmastery.com {
         respond "Too Many Requests" 429
     }
 
-    # 📊 Proxy /grafana/*
     handle_path /grafana/* {
         reverse_proxy streaker-grafana:3000
     }
 
-    # ⚙️ Proxy /api/*
     handle /api/* {
         reverse_proxy streaker-backend:8080
     }
 
-    # 🌐 Serve Angular frontend for all other routes
     handle {
         root * /usr/share/caddy/browser
         try_files {path} /index.html
@@ -46,7 +39,6 @@ streakmastery.com, www.streakmastery.com {
         encode gzip
     }
 
-    # 🛡 Security headers
     header {
         X-Content-Type-Options "nosniff"
         X-Frame-Options "DENY"
@@ -54,7 +46,6 @@ streakmastery.com, www.streakmastery.com {
         Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
     }
 
-    # 📄 Access Logging
     log {
         format json
         output file /var/log/caddy/access.log {
@@ -66,20 +57,16 @@ streakmastery.com, www.streakmastery.com {
     }
 }
 
-# 🌐 Localhost (HTTP only, no HTTPS)
 http://localhost {
 
-    # 📊 Proxy /grafana/*
     handle /grafana/* {
         reverse_proxy streaker-grafana:3000
     }
 
-    # ⚙️ Proxy /api/*
     handle /api/* {
         reverse_proxy streaker-backend:8080
     }
 
-    # 🌐 Serve Angular frontend for all other routes
     handle {
         root * /usr/share/caddy/browser
         try_files {path} /index.html
@@ -87,7 +74,6 @@ http://localhost {
         encode gzip
     }
 
-    # 🛡 Security headers
     header {
         X-Content-Type-Options "nosniff"
         X-Frame-Options "DENY"
