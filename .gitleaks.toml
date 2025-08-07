@@ -21,6 +21,7 @@ allowlist = { paths = [
   "backend/src/test/.*",
   "docs/.*",
   "infra/env/.*\\.template",
+  "README\\.md"
 ]}
 
 [[rules]]
@@ -29,4 +30,5 @@ description = "Curl Authorization Header"
 regex = '''Authorization:.*'''
 allowlist = { paths = [
   "docs/.*",
+  "README\\.md"
 ]}

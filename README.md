@@ -250,7 +250,7 @@ Full docker clean-up:
 
 **For PowerShell:**
 
-    $env:CR_PAT = "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"
+    $env:CR_PAT = "your_pat_goes_year"
     docker login ghcr.io -u mregra --password $env:CR_PAT
     docker push ghcr.io/mregra/streaker-backend:latest
 
