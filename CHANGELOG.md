@@ -1,3 +1,14 @@
+## [2.4.11](https://github.com/MRegra/streaker-business/compare/v2.4.10...v2.4.11) (2025-08-08)
+
+
+### Bug Fixes
+
+* adding group and user ([11199ea](https://github.com/MRegra/streaker-business/commit/11199eae6164ef69a4c80ba2fa11eb6ac4925f26))
+* fixing high on dockerfile caddy ([4c9ffad](https://github.com/MRegra/streaker-business/commit/4c9ffad03010814706f0be789e1a503d46c3e28a))
+* fixing permission issue to access access.log caddy ([1858c27](https://github.com/MRegra/streaker-business/commit/1858c273fc63c475c61e3a832d0b0cdbb193d7c2))
+* is this it? ([5576b48](https://github.com/MRegra/streaker-business/commit/5576b485467330c246f6820dea9cbd64cceaadef))
+* test in the pipeline ([4b8e36c](https://github.com/MRegra/streaker-business/commit/4b8e36c94b5e37d5c1b294e03313e7681dc5a021))
+
 ## [2.4.10](https://github.com/MRegra/streaker-business/compare/v2.4.9...v2.4.10) (2025-08-07)
 
 
