@@ -17,8 +17,8 @@ RUN git clone --depth 1 https://github.com/caddyserver/caddy /go/src/github.com/
 
 WORKDIR /go/src/github.com/caddyserver/caddy
 
-# Build Caddy binary
-RUN go build -o /usr/bin/caddy main.go
+# Build Caddy binary (fix here: no main.go argument)
+RUN go build -o /usr/bin/caddy
 
 # Step 3: Final image, minimal Alpine with Caddy binary and frontend files
 FROM alpine:3.22
@@ -46,7 +46,7 @@ RUN touch /var/log/caddy/access.log \
  && chown caddy:caddy /var/log/caddy/access.log \
  && chmod 640 /var/log/caddy/access.log
 
- USER caddy
+USER caddy
 
 EXPOSE 80 443
 
