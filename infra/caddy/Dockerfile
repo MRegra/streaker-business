@@ -1,3 +1,4 @@
+# Step 1: Build Angular frontend
 FROM node:20-alpine AS build-frontend
 WORKDIR /app
 COPY ../../frontend/package*.json ./
@@ -6,31 +7,46 @@ COPY ../../frontend ./
 RUN npm install -g @angular/cli
 RUN ng build --configuration=production
 
-FROM caddy:2.10.0-alpine
+# Step 2: Build Caddy from source with Go 1.24.4-alpine
+FROM golang:1.24.4-alpine AS builder
 
-RUN apk add --no-cache bash wget
+RUN apk add --no-cache git
 
-# Create caddy user and group early
-RUN addgroup -S caddy && adduser -S -G caddy caddy
+# Clone Caddy source (shallow clone)
+RUN git clone --depth 1 https://github.com/caddyserver/caddy /go/src/github.com/caddyserver/caddy
 
-# Create required directories explicitly (they might not exist)
-RUN mkdir -p /usr/share/caddy /etc/caddy /var/log/caddy
+WORKDIR /go/src/github.com/caddyserver/caddy
 
-# Copy Angular build output to Caddy's default web root
+# Build Caddy binary
+RUN go build -o /usr/bin/caddy main.go
+
+# Step 3: Final image, minimal Alpine with Caddy binary and frontend files
+FROM alpine:3.22
+
+RUN apk add --no-cache bash wget ca-certificates
+
+# Create caddy user and directories with correct permissions
+RUN addgroup -S caddy && adduser -S -G caddy caddy && \
+    mkdir -p /usr/share/caddy /etc/caddy /var/log/caddy && \
+    chown -R caddy:caddy /usr/share/caddy /etc/caddy /var/log/caddy
+
+# Copy Caddy binary from builder stage
+COPY --from=builder /usr/bin/caddy /usr/bin/caddy
+
+# Copy Angular build output from frontend build stage
 COPY --from=build-frontend /app/dist/* /usr/share/caddy
 
-# Copy custom Caddyfile
+# Copy your custom Caddyfile
 COPY infra/caddy/Caddyfile /etc/caddy/Caddyfile
 
-# Set ownership on directories that definitely exist
+# Set ownership again just to be safe
 RUN chown -R caddy:caddy /usr/share/caddy /etc/caddy /var/log/caddy
 
-# Create and set permissions for log file AFTER ownership set on /var/log/caddy
 RUN touch /var/log/caddy/access.log \
  && chown caddy:caddy /var/log/caddy/access.log \
  && chmod 640 /var/log/caddy/access.log
 
-USER caddy
+ USER caddy
 
 EXPOSE 80 443
 
