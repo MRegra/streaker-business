@@ -1,4 +1,3 @@
-# Build Angular frontend
 FROM node:20-alpine AS build-frontend
 WORKDIR /app
 COPY ../../frontend/package*.json ./
@@ -7,28 +6,28 @@ COPY ../../frontend ./
 RUN npm install -g @angular/cli
 RUN ng build --configuration=production
 
-# Final Caddy image (official Caddy Alpine image with binary pre-installed)
 FROM caddy:2.10.0-alpine
 
 RUN apk add --no-cache bash wget
 
-# Create caddy user and group if they don't exist
+# Create caddy user and group early
 RUN addgroup -S caddy && adduser -S -G caddy caddy
+
+# Create required directories explicitly (they might not exist)
+RUN mkdir -p /usr/share/caddy /etc/caddy /var/log/caddy
 
 # Copy Angular build output to Caddy's default web root
 COPY --from=build-frontend /app/dist/* /usr/share/caddy
 
-# Copy your custom Caddyfile
+# Copy custom Caddyfile
 COPY infra/caddy/Caddyfile /etc/caddy/Caddyfile
 
-# Set ownership now that caddy user exists
+# Set ownership on directories that definitely exist
 RUN chown -R caddy:caddy /usr/share/caddy /etc/caddy /var/log/caddy
 
-USER root
-RUN mkdir -p /var/log/caddy \
- && touch /var/log/caddy/access.log \
- && chown -R caddy:caddy /var/log/caddy \
- && chmod 750 /var/log/caddy \
+# Create and set permissions for log file AFTER ownership set on /var/log/caddy
+RUN touch /var/log/caddy/access.log \
+ && chown caddy:caddy /var/log/caddy/access.log \
  && chmod 640 /var/log/caddy/access.log
 
 USER caddy
