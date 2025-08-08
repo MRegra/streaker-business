@@ -12,13 +12,16 @@ FROM caddy:2.10.0-alpine
 
 RUN apk add --no-cache bash wget
 
+# Create caddy user and group if they don't exist
+RUN addgroup -S caddy && adduser -S -G caddy caddy
+
 # Copy Angular build output to Caddy's default web root
 COPY --from=build-frontend /app/dist/* /usr/share/caddy
 
 # Copy your custom Caddyfile
 COPY infra/caddy/Caddyfile /etc/caddy/Caddyfile
 
-# Set ownership (default user is caddy)
+# Set ownership now that caddy user exists
 RUN chown -R caddy:caddy /usr/share/caddy /etc/caddy /var/log/caddy
 
 USER root
@@ -27,6 +30,7 @@ RUN mkdir -p /var/log/caddy \
  && chown -R caddy:caddy /var/log/caddy \
  && chmod 750 /var/log/caddy \
  && chmod 640 /var/log/caddy/access.log
+
 USER caddy
 
 EXPOSE 80 443
