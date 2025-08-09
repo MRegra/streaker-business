@@ -1,3 +1,11 @@
+## [2.4.13](https://github.com/MRegra/streaker-business/compare/v2.4.12...v2.4.13) (2025-08-09)
+
+
+### Bug Fixes
+
+* giving this new fix a try... ([015326c](https://github.com/MRegra/streaker-business/commit/015326cda6ca4bb4349ed6b8233ed1f5cafd6823))
+* removing vulnerability from caddy dockerfile ([e1f0c4e](https://github.com/MRegra/streaker-business/commit/e1f0c4efcfefada14f75867f93bbb7d24135eda4))
+
 ## [2.4.12](https://github.com/MRegra/streaker-business/compare/v2.4.11...v2.4.12) (2025-08-09)
 
 
