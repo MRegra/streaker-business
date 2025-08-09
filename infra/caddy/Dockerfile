@@ -6,26 +6,19 @@ RUN npm ci
 COPY frontend/ ./
 RUN npx @angular/cli@20 build -c production --output-path=/app/build
 
-# --- Step 2: Build Caddy with Go 1.24.4 and patched x/crypto ---
+# --- Step 2: Build Caddy from source with patched x/crypto ---
 FROM golang:1.24.4-alpine AS caddy-builder
-ARG XCADDY_VERSION=v0.3.5
 ARG CADDY_VERSION=v2.8.4
-# pick a patched x/crypto (>=0.35.0); using 0.38.0 here
 ARG XCRYPTO_VERSION=v0.38.0
-
-RUN apk add --no-cache git build-base curl
-RUN curl -L "https://github.com/caddyserver/xcaddy/releases/download/${XCADDY_VERSION}/xcaddy_${XCADDY_VERSION#v}_linux_amd64.tar.gz" \
-  | tar -xz -C /usr/local/bin
-
-# ensure we fetch the exact versions we want
-ENV CGO_ENABLED=0 \
-    GOFLAGS="-trimpath -buildvcs=false" \
-    GOPROXY="https://proxy.golang.org,direct" \
-    GOSUMDB="sum.golang.org" \
-    XCADDY_REPLACE="golang.org/x/crypto=golang.org/x/crypto@${XCRYPTO_VERSION}"
-
-# Build a pinned Caddy with a replaced x/crypto
-RUN xcaddy build ${CADDY_VERSION} --output /usr/bin/caddy
+RUN apk add --no-cache git build-base
+# get caddy source
+RUN git clone --depth 1 --branch ${CADDY_VERSION} https://github.com/caddyserver/caddy.git /src/caddy
+WORKDIR /src/caddy/cmd/caddy
+# force patched x/crypto, tidy, and build
+RUN go mod edit -replace golang.org/x/crypto=golang.org/x/crypto@${XCRYPTO_VERSION} \
+ && go mod tidy
+ENV CGO_ENABLED=0 GOFLAGS="-trimpath -buildvcs=false" GOPROXY="https://proxy.golang.org,direct" GOSUMDB="sum.golang.org"
+RUN go build -o /usr/bin/caddy .
 
 # --- Step 3: Minimal runtime (non-root) ---
 FROM alpine:3.22
