@@ -24,9 +24,6 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-    labels:
-      - "app=backend"
-      - "logging=fluent-bit"
     profiles: ["prod"]
 
   backend-local:
@@ -56,9 +53,6 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-    labels:
-      - "app=backend"
-      - "logging=fluent-bit"
     profiles: ["local"]
 
   frontend-local:
@@ -109,9 +103,8 @@ services:
     image: fluent/fluent-bit:latest
     container_name: streaker-fluent-bit
     volumes:
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./infra/logging/fluent-bit:/fluent-bit/etc:ro
+      - ./infra/logging/fluent-bit:/fluent-bit/etc
+      - shared-logs:/app/logs
     depends_on:
       - loki
     networks:
@@ -167,9 +160,6 @@ services:
       - grafana
     env_file:
       - ./infra/env/.env
-    labels:
-      - "app=caddy"
-      - "logging=fluent-bit"
     profiles: ["local"]
 
   caddy-prod:
@@ -190,9 +180,6 @@ services:
       - grafana
     env_file:
       - ./infra/env/.env
-    labels:
-      - "app=caddy"
-      - "logging=fluent-bit"
     profiles: ["prod"]
 
   watchtower:
@@ -209,6 +196,7 @@ services:
 
 volumes:
   pgdata:
+  shared-logs:
   caddy_data:
   caddy_config:
   frontend-build:
