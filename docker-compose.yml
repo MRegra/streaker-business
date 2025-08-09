@@ -110,7 +110,7 @@ services:
     container_name: streaker-fluent-bit
     volumes:
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./infra/logging/fluent-bit:/fluent-bit/etc:ro
     depends_on:
       - loki

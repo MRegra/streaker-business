@@ -2,10 +2,10 @@
 FROM node:20-alpine AS build-frontend
 WORKDIR /app
 COPY ../../frontend/package*.json ./
-RUN npm ci
+RUN npm install
 COPY ../../frontend ./
-# Build without installing CLI globally
-RUN npx @angular/cli@latest build --configuration=production
+RUN npm install -g @angular/cli
+RUN ng build --configuration=production
 
 # --- Step 2: Build Caddy with Go 1.24.4 (patched for CVE-2025-22874) ---
 FROM golang:1.24.4-alpine AS caddy-builder
