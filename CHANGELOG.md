@@ -1,3 +1,10 @@
+## [2.4.14](https://github.com/MRegra/streaker-business/compare/v2.4.13...v2.4.14) (2025-08-09)
+
+
+### Bug Fixes
+
+* typo in the fluent-bit conf path ([d3fca89](https://github.com/MRegra/streaker-business/commit/d3fca895682c10da7a367b990ccf77b4983537d1))
+
 ## [2.4.13](https://github.com/MRegra/streaker-business/compare/v2.4.12...v2.4.13) (2025-08-09)
 
 
