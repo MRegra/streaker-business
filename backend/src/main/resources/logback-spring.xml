@@ -1,34 +1,17 @@
 <configuration scan="true" scanPeriod="30 seconds">
 
-    <!-- DEV PROFILE -->
+    <!-- ===== DEV PROFILE ===== -->
     <springProfile name="dev">
 
-        <!-- Pretty console logs -->
+        <!-- Human-friendly console -->
         <appender name="CONSOLE_PRETTY" class="ch.qos.logback.core.ConsoleAppender">
             <encoder>
                 <pattern>%d{HH:mm:ss.SSS} %highlight(%-5level) [%thread] %cyan(%logger{36}) - %msg%n%ex</pattern>
             </encoder>
         </appender>
 
-        <!-- Console JSON logs for local observability -->
+        <!-- Structured JSON to stdout (useful if you still scrape dev logs) -->
         <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
-            <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
-                <providers>
-                    <timestamp fieldName="timestamp"/>
-                    <logLevel fieldName="level"/>
-                    <threadName fieldName="thread"/>
-                    <loggerName fieldName="logger"/>
-                    <message/>
-                    <mdc/>
-                    <stackTrace fieldName="exception"/>
-                </providers>
-            </encoder>
-        </appender>
-
-        <!-- File JSON logs for Fluent Bit -->
-        <appender name="FILE_JSON" class="ch.qos.logback.core.FileAppender">
-            <file>/app/logs/streaker.log</file>
-            <append>true</append>
             <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
                 <providers>
                     <timestamp fieldName="timestamp"/>
@@ -45,36 +28,30 @@
         <root level="DEBUG">
             <appender-ref ref="CONSOLE_PRETTY"/>
             <appender-ref ref="CONSOLE_JSON"/>
-            <appender-ref ref="FILE_JSON"/>
         </root>
     </springProfile>
 
-    <!-- PROD PROFILE -->
+    <!-- ===== PROD PROFILE ===== -->
     <springProfile name="prod">
-        <!-- Rolling file JSON logs for Fluent Bit + Loki -->
-        <appender name="FILE_JSON" class="ch.qos.logback.core.rolling.RollingFileAppender">
-            <file>/app/logs/streaker.log</file>
-            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-                <fileNamePattern>/app/logs/streaker.%d{yyyy-MM-dd}.log</fileNamePattern>
-                <maxHistory>7</maxHistory>
-            </rollingPolicy>
+
+        <!-- Structured JSON only to stdout (let Promtail/Fluent Bit ship it to Loki) -->
+        <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
             <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
                 <providers>
                     <timestamp><fieldName>timestamp</fieldName></timestamp>
                     <logLevel><fieldName>level</fieldName></logLevel>
                     <threadName><fieldName>thread</fieldName></threadName>
                     <loggerName><fieldName>logger</fieldName></loggerName>
-                    <message />
-                    <mdc />
+                    <message/>
+                    <mdc/>
                     <stackTrace><fieldName>exception</fieldName></stackTrace>
                 </providers>
             </encoder>
         </appender>
 
         <root level="INFO">
-            <appender-ref ref="FILE_JSON"/>
+            <appender-ref ref="CONSOLE_JSON"/>
         </root>
     </springProfile>
 
 </configuration>
-

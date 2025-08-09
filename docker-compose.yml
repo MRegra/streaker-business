@@ -19,13 +19,14 @@ services:
       start_period: 15s
     networks:
       - streaker-net
-    volumes:
-      - shared-logs:/app/logs
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
+    labels:
+      - "app=backend"
+      - "logging=fluent-bit"
     profiles: ["prod"]
 
   backend-local:
@@ -50,13 +51,14 @@ services:
       start_period: 15s
     networks:
       - streaker-net
-    volumes:
-      - shared-logs:/app/logs
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
+    labels:
+      - "app=backend"
+      - "logging=fluent-bit"
     profiles: ["local"]
 
   frontend-local:
@@ -107,9 +109,10 @@ services:
     image: fluent/fluent-bit:latest
     container_name: streaker-fluent-bit
     volumes:
-      - ./infra/logging/fluent-bit:/fluent-bit/etc
-      - shared-logs:/app/logs
-      - ./logs/caddy:/var/log/caddy
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./infra/fluent-bit/parsers.conf:/fluent-bit/etc/parsers.conf:ro
+      - ./infra/fluent-bit/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf:ro
     depends_on:
       - loki
     networks:
@@ -123,7 +126,7 @@ services:
       - "3100:3100"
     command: -config.file=/etc/loki/config.yaml
     volumes:
-      - ./infra/logging/loki/config.yaml:/etc/loki/config.yaml
+      - ./infra/logging/loki/config.yaml:/etc/loki/config.yaml:ro
     networks:
       - streaker-net
     profiles: ["local", "prod"]
@@ -156,6 +159,7 @@ services:
       - frontend-build:/usr/share/caddy
       - caddy_data:/data
       - caddy_config:/config
+      - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
     networks:
       - streaker-net
     depends_on:
@@ -164,6 +168,9 @@ services:
       - grafana
     env_file:
       - ./infra/env/.env
+    labels:
+      - "app=caddy"
+      - "logging=fluent-bit"
     profiles: ["local"]
 
   caddy-prod:
@@ -174,8 +181,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile
-      - ./logs/caddy:/var/log/caddy 
+      - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
     networks:
@@ -185,6 +191,9 @@ services:
       - grafana
     env_file:
       - ./infra/env/.env
+    labels:
+      - "app=caddy"
+      - "logging=fluent-bit"
     profiles: ["prod"]
 
   watchtower:
@@ -201,7 +210,6 @@ services:
 
 volumes:
   pgdata:
-  shared-logs:
   caddy_data:
   caddy_config:
   frontend-build:
