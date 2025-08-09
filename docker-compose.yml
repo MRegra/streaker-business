@@ -102,14 +102,18 @@ services:
   fluent-bit:
     image: fluent/fluent-bit:latest
     container_name: streaker-fluent-bit
+    command: ["/fluent-bit/etc/fluent-bit.conf"]
     volumes:
-      - ./infra/logging/fluent-bit:/fluent-bit/etc
-      - shared-logs:/app/logs
+      - ./infra/logging/fluent-bit:/fluent-bit/etc:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
       - loki
     networks:
       - streaker-net
+    restart: unless-stopped
     profiles: ["local", "prod"]
+
 
   loki:
     image: grafana/loki:2.9.2
