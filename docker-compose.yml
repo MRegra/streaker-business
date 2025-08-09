@@ -145,7 +145,8 @@ services:
 
   caddy-local:
     build:
-      context: ./infra/caddy
+      context: .
+      dockerfile: ./infra/caddy/Dockerfile
     container_name: streaker-caddy-local
     restart: unless-stopped
     ports:
