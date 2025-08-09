@@ -1,3 +1,12 @@
+## [2.4.17](https://github.com/MRegra/streaker-business/compare/v2.4.16...v2.4.17) (2025-08-09)
+
+
+### Bug Fixes
+
+* fix the issue with caddy ([01bd128](https://github.com/MRegra/streaker-business/commit/01bd1283668a532c6c2493f7b3aa1089526cbf11))
+* fix? ([219f0fc](https://github.com/MRegra/streaker-business/commit/219f0fc9fb94e737e47e9dced13e7c581797bc09))
+* fixing another cve ([2a55249](https://github.com/MRegra/streaker-business/commit/2a55249e98c92f07696d45afc51b80675889bc99))
+
 ## [2.4.16](https://github.com/MRegra/streaker-business/compare/v2.4.15...v2.4.16) (2025-08-09)
 
 
