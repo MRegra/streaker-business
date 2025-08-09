@@ -1,3 +1,10 @@
+## [2.4.12](https://github.com/MRegra/streaker-business/compare/v2.4.11...v2.4.12) (2025-08-09)
+
+
+### Bug Fixes
+
+* permission issue not happening locally anymore ([8175e2f](https://github.com/MRegra/streaker-business/commit/8175e2f32b8894d04bbe86e3bda64a656b4b1c79))
+
 ## [2.4.11](https://github.com/MRegra/streaker-business/compare/v2.4.10...v2.4.11) (2025-08-08)
 
 
