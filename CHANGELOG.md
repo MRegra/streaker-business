@@ -1,3 +1,10 @@
+## [2.4.16](https://github.com/MRegra/streaker-business/compare/v2.4.15...v2.4.16) (2025-08-09)
+
+
+### Bug Fixes
+
+* fixing fluent-bit ([5cdbf69](https://github.com/MRegra/streaker-business/commit/5cdbf696fae112d841200b5802d5f0adee5e6a64))
+
 ## [2.4.15](https://github.com/MRegra/streaker-business/compare/v2.4.14...v2.4.15) (2025-08-09)
 
 
