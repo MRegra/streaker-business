@@ -1,3 +1,10 @@
+## [2.4.18](https://github.com/MRegra/streaker-business/compare/v2.4.17...v2.4.18) (2025-08-10)
+
+
+### Bug Fixes
+
+* reminving the double api on backend uri ([8718d14](https://github.com/MRegra/streaker-business/commit/8718d146ed1df3992a87ada2d4967d55fd7bc2c6))
+
 ## [2.4.17](https://github.com/MRegra/streaker-business/compare/v2.4.16...v2.4.17) (2025-08-09)
 
 
