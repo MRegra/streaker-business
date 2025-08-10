@@ -116,7 +116,6 @@ services:
     restart: unless-stopped
     profiles: ["local", "prod"]
 
-
   loki:
     image: grafana/loki:2.9.2
     container_name: streaker-loki
@@ -171,7 +170,7 @@ services:
   caddy-prod:
     image: ghcr.io/mregra/streaker-caddy-prod:latest
     container_name: streaker-caddy
-    command: ["caddy","run","--config","/etc/caddy/Caddyfile","--adapter","caddyfile","--watch"]
+    command: ["run","--config","/etc/caddy/Caddyfile","--adapter","caddyfile","--watch"]
     restart: unless-stopped
     ports:
       - "80:80"
@@ -209,7 +208,6 @@ services:
 
 volumes:
   pgdata:
-  shared-logs:
   caddy_data:
   caddy_config:
   frontend-build:
