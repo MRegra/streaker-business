@@ -171,6 +171,7 @@ services:
   caddy-prod:
     image: ghcr.io/mregra/streaker-caddy-prod:latest
     container_name: streaker-caddy
+    command: ["caddy","run","--config","/etc/caddy/Caddyfile","--adapter","caddyfile","--watch"]
     restart: unless-stopped
     ports:
       - "80:80"
@@ -196,8 +197,14 @@ services:
       - ./infra/env/.env
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ~/.docker/config.json:/config/.dockerconfigjson
-    command: streaker-backend streaker-caddy
+      - ~/.docker/config.json:/config.json:ro
+    command:
+      - --interval=30
+      - --cleanup
+      - --include-restarting
+      - --rolling-restart
+      - streaker-backend
+      - streaker-caddy
     profiles: ["watchtower"]
 
 volumes:
