@@ -1,3 +1,10 @@
+## [2.4.20](https://github.com/MRegra/streaker-business/compare/v2.4.19...v2.4.20) (2025-08-10)
+
+
+### Bug Fixes
+
+* fixing deployment issue with caddy - simple fix ([638377e](https://github.com/MRegra/streaker-business/commit/638377e0a2fefa0ccd284292acb3c699966b9206))
+
 ## [2.4.19](https://github.com/MRegra/streaker-business/compare/v2.4.18...v2.4.19) (2025-08-10)
 
 
