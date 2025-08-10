@@ -1,3 +1,10 @@
+## [2.4.19](https://github.com/MRegra/streaker-business/compare/v2.4.18...v2.4.19) (2025-08-10)
+
+
+### Bug Fixes
+
+* fixing watchtower ([52eb009](https://github.com/MRegra/streaker-business/commit/52eb009f9d84ba710ee347dd407e687be45b135d))
+
 ## [2.4.18](https://github.com/MRegra/streaker-business/compare/v2.4.17...v2.4.18) (2025-08-10)
 
 
