@@ -15,7 +15,7 @@ streakmastery.com, www.streakmastery.com {
         reverse_proxy streaker-grafana:3000
     }
 
-    handle_path /api/* {
+    handle /api/* {
         reverse_proxy streaker-backend:8080
     }
 
